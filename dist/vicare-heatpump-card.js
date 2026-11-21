@@ -4,7 +4,7 @@
  * indicative health check for Viessmann heat pumps using the built-in ViCare
  * integration. MIT License.
  */
-const VHP_VERSION = "0.14.0";
+const VHP_VERSION = "0.14.1";
 
 /* Refrigerant tables generated with CoolProp (IIR reference state).
  * sat: [T °C, p_bubble bar(a), p_dew bar(a), h_liquid kJ/kg, h_vapour kJ/kg]
@@ -1622,7 +1622,8 @@ class VicareHeatpumpCard extends HTMLElement {
     this._set("v_sec_return", f(this._val("sec_return")));
     this._set("v_pri_supply", f(this._val("pri_supply")));
     this._set("v_pri_return", f(this._val("pri_return")));
-    this._set("v_circ_supply", f(this._val("circ_supply")));
+    // the circuit name stays; the value is left out while the sensor is unavailable
+    this._set("v_circ_supply", isFinite(this._val("circ_supply")) ? f(this._val("circ_supply")) : "");
     this._set("v_outside", f(this._val("outside")));
     this._set("v_tc", `tc ${f(tc)}`);
     this._set("v_t0", `t0 ${f(t0)}`);
