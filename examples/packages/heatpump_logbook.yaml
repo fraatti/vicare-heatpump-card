@@ -1,0 +1,60 @@
+# Heat pump logbook (ViCare device.messages.logbook) for vicare-heatpump-card
+#
+# The heat pump keeps only its 5 newest logbook entries in the cloud (about two
+# hours). This package fetches them every 30 minutes and appends new entries to
+# /config/vicare_logbook.csv (opens in Excel). The card shows them in its logbook
+# list and as markers on the timeline.
+#
+# Setup:
+#   1. Copy vicare_logbook.py to /config
+#   2. Copy this file to /config/packages
+#      (configuration.yaml: homeassistant: packages: !include_dir_named packages)
+#   3. Developer tools -> YAML -> Check configuration, then restart Home Assistant
+#
+# API usage: 48 calls per day (the Basic plan allows about 1450).
+# Do not fetch more often than every 30 minutes.
+# Texts of the sensor and the CSV are English; add "--lang fi" to the command for Finnish.
+
+command_line:
+  - sensor:
+      name: HP logbook
+      unique_id: hp_logbook
+      icon: mdi:clipboard-text-clock-outline
+      command: "python3 -I /config/vicare_logbook.py"
+      command_timeout: 60
+      scan_interval: 1800
+      value_template: "{{ value_json.state }}"
+      json_attributes:
+        - latest_time
+        - rows
+        - events
+        - new
+        - unknown
+        - total
+        - error
+
+automation:
+  - id: hp_logbook_unusual
+    alias: "Heat pump: unusual logbook entry"
+    description: >-
+      Notifies when the logbook gets an entry that is not an ordinary start,
+      stop or valve change.
+    mode: queued
+    triggers:
+      - trigger: state
+        entity_id: sensor.hp_logbook
+    conditions:
+      - condition: template
+        value_template: "{{ (state_attr('sensor.hp_logbook', 'unknown') or []) | count > 0 }}"
+    actions:
+      - action: persistent_notification.create
+        data:
+          notification_id: hp_logbook
+          title: Heat pump logbook
+          message: |-
+            New entry that is not recognised:
+            {% for r in state_attr('sensor.hp_logbook', 'unknown') %}
+            - {{ r }}
+            {% endfor %}
+
+            Full history: /config/vicare_logbook.csv

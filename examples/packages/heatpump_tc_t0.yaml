@@ -1,0 +1,42 @@
+# Condensing (tc) and evaporating (t0) temperatures for a R410A heat pump,
+# calculated from the ViCare pressures exactly like vicare-heatpump-card does
+# (dew point, absolute pressure). Add under configuration.yaml or a package,
+# then Developer tools -> YAML -> Template entities (reload).
+template:
+  - sensor:
+      - name: "HP evaporating temperature t0"
+        unique_id: hp_evaporating_temperature_t0
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        availability: "{{ has_value('sensor.workroom_cu401b_g_suction_gas_pressure') }}"
+        state: >
+          {% set p = states('sensor.workroom_cu401b_g_suction_gas_pressure') | float(0) %}
+          {% set t = [-40, -36, -32, -28, -24, -20, -16, -12, -8, -4, 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68] %}
+          {% set ps = [1.748, 2.089, 2.479, 2.923, 3.426, 3.993, 4.63, 5.341, 6.133, 7.011, 7.981, 9.049, 10.221, 11.504, 12.904, 14.429, 16.086, 17.882, 19.824, 21.923, 24.186, 26.624, 29.246, 32.065, 35.094, 38.348, 41.848, 45.618] %}
+          {% set ns = namespace(v=none) %}
+          {% for i in range(1, t | length) %}
+            {% if ns.v is none and (p <= ps[i] or loop.last) %}
+              {% set ns.v = t[i-1] + (t[i] - t[i-1]) * (p - ps[i-1]) / (ps[i] - ps[i-1]) %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.v | round(1) }}
+
+      - name: "HP condensing temperature tc"
+        unique_id: hp_condensing_temperature_tc
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        availability: "{{ has_value('sensor.workroom_cu401b_g_hot_gas_pressure') }}"
+        state: >
+          {% set p = states('sensor.workroom_cu401b_g_hot_gas_pressure') | float(0) %}
+          {% set t = [-40, -36, -32, -28, -24, -20, -16, -12, -8, -4, 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68] %}
+          {% set ps = [1.748, 2.089, 2.479, 2.923, 3.426, 3.993, 4.63, 5.341, 6.133, 7.011, 7.981, 9.049, 10.221, 11.504, 12.904, 14.429, 16.086, 17.882, 19.824, 21.923, 24.186, 26.624, 29.246, 32.065, 35.094, 38.348, 41.848, 45.618] %}
+          {% set ns = namespace(v=none) %}
+          {% for i in range(1, t | length) %}
+            {% if ns.v is none and (p <= ps[i] or loop.last) %}
+              {% set ns.v = t[i-1] + (t[i] - t[i-1]) * (p - ps[i-1]) / (ps[i] - ps[i-1]) %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.v | round(1) }}
+

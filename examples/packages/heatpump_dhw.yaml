@@ -1,0 +1,114 @@
+# Lift tc − t0 and hot water run peaks (vicare-heatpump-card)
+#
+# When the difference between condensing and evaporating temperature reaches
+# parameter 5080 (62 K on this unit), the refrigerant circuit controller stops the
+# compressor and logs a note "Refrigerant circuit 07" with code 31 (Vitotronic 200
+# WO1C service instructions, refrigerant circuit controller messages).
+# This package calculates the lift continuously and records the highest lift and
+# hot gas pressure of every hot water run, so they can be compared with the
+# unit's event memory (Diagnosis -> Refrigerant circuit -> Message history).
+#
+# Requires heatpump_tc_t0.yaml (sensor.hp_condensing_temperature_tc and
+# sensor.hp_evaporating_temperature_t0).
+
+template:
+  - trigger:
+      - trigger: state
+        entity_id:
+          - sensor.hp_condensing_temperature_tc
+          - sensor.hp_evaporating_temperature_t0
+        id: value
+      - trigger: state
+        entity_id: binary_sensor.cu401b_g_compressor
+        from: "on"
+        to: "off"
+        id: stop
+    sensor:
+      - name: "HP lift tc-t0"
+        unique_id: hp_lift_tc_t0
+        unit_of_measurement: "K"
+        state_class: measurement
+        icon: mdi:arrow-expand-vertical
+        # Updated only while the compressor runs; otherwise it keeps the last running value.
+        # ViCare reports the falling pressures of a stop 5-30 s before the compressor sensor turns
+        # off, so a sudden drop is held back for a minute and, at the stop, the last value at least 45 s old is kept.
+        state: >-
+          {% set prev = this.state | float(none) if this is defined else none %}
+          {% set lst = this.attributes.recent if this is defined and this.attributes.recent is list else [] %}
+          {% set ok = is_state('binary_sensor.cu401b_g_compressor', 'on')
+                and has_value('sensor.hp_condensing_temperature_tc')
+                and has_value('sensor.hp_evaporating_temperature_t0') %}
+          {% if trigger.id == 'value' and ok %}
+            {% set v = (states('sensor.hp_condensing_temperature_tc') | float
+                        - states('sensor.hp_evaporating_temperature_t0') | float) | round(1) %}
+            {% if prev is not none and v < prev - 6 %}
+              {# a sudden drop is taken only once it has lasted a minute (e.g. hot water -> heating) #}
+              {% set ns = namespace(t=none, done=false) %}
+              {% for e in lst | reverse %}{% if not ns.done %}{% if e[1] < prev - 6 %}{% set ns.t = e[0] %}{% else %}{% set ns.done = true %}{% endif %}{% endif %}{% endfor %}
+              {{ v if ns.t is not none and as_timestamp(now()) - ns.t >= 60 else prev }}
+            {% else %}
+              {{ v }}
+            {% endif %}
+          {% elif trigger.id == 'stop' %}
+            {% set good = lst | selectattr(0, '<=', as_timestamp(now()) - 45) | list %}
+            {{ good[-1][1] if good else prev }}
+          {% else %}
+            {{ prev }}
+          {% endif %}
+        attributes:
+          recent: >-
+            {% set lst = this.attributes.recent if this is defined and this.attributes.recent is list else [] %}
+            {% set ok = is_state('binary_sensor.cu401b_g_compressor', 'on')
+                  and has_value('sensor.hp_condensing_temperature_tc')
+                  and has_value('sensor.hp_evaporating_temperature_t0') %}
+            {% if trigger.id == 'value' and ok %}
+              {% set v = (states('sensor.hp_condensing_temperature_tc') | float
+                          - states('sensor.hp_evaporating_temperature_t0') | float) | round(1) %}
+              {{ (lst + [[as_timestamp(now()) | round(0), v]])[-8:] }}
+            {% elif trigger.id == 'stop' %}
+              {{ [] }}
+            {% else %}
+              {{ lst }}
+            {% endif %}
+
+  - trigger:
+      - trigger: state
+        entity_id: sensor.hp_lift_tc_t0
+        id: value
+      - trigger: state
+        entity_id: binary_sensor.cu401b_g_dhw_charging
+        from: "on"
+        to: "off"
+        id: end
+    sensor:
+      - name: "HP DHW run max lift"
+        unique_id: hp_dhw_run_max_lift
+        unit_of_measurement: "K"
+        icon: mdi:water-boiler-alert
+        # State = highest lift of the last finished hot water run.
+        state: >
+          {% set prev = this.state | float(none) %}
+          {% set cur = this.attributes.current_max if this.attributes.current_max is number else none %}
+          {{ cur if trigger.id == 'end' and cur is not none else prev }}
+        attributes:
+          limit: "62"
+          current_max: >
+            {% set prev = this.attributes.current_max if this.attributes.current_max is number else none %}
+            {% set v = trigger.to_state.state | float(none) if trigger.id == 'value' else none %}
+            {% if trigger.id == 'end' %}{{ none }}
+            {% elif is_state('binary_sensor.cu401b_g_dhw_charging', 'on') and v is not none %}{{ [v, prev] | reject('none') | max }}
+            {% else %}{{ prev }}{% endif %}
+          current_pressure: >
+            {% set prev = this.attributes.current_pressure if this.attributes.current_pressure is number else none %}
+            {% set p = states('sensor.workroom_cu401b_g_hot_gas_pressure') | float(none) %}
+            {% if trigger.id == 'end' %}{{ none }}
+            {% elif is_state('binary_sensor.cu401b_g_dhw_charging', 'on') and is_state('binary_sensor.cu401b_g_compressor', 'on') and p is not none %}{{ [p, prev] | reject('none') | max }}
+            {% else %}{{ prev }}{% endif %}
+          runs: >
+            {% set lst = this.attributes.runs if this.attributes.runs is list else [] %}
+            {% set cur = this.attributes.current_max if this.attributes.current_max is number else none %}
+            {% if trigger.id == 'end' and cur is not none %}
+              {% set item = {'end': now().strftime('%d.%m. %H:%M'), 'lift': cur,
+                             'pressure': this.attributes.current_pressure} %}
+              {{ (lst + [item])[-40:] }}
+            {% else %}{{ lst }}{% endif %}

@@ -1,0 +1,323 @@
+# Example dashboard for vicare-heatpump-card (Vitocal 333-G, entity IDs cu401b_g_*).
+# Settings -> Dashboards -> Add dashboard -> open it -> pencil -> three dots -> Raw configuration editor,
+# replace everything with this file. Change the entity IDs to match your own unit.
+# Needs the packages in examples/packages for the hp_* sensors.
+views:
+- title: Now
+  path: now
+  icon: mdi:heat-pump
+  type: sections
+  max_columns: 3
+  sections:
+  - type: grid
+    column_span: 3
+    cards:
+    - type: custom:vicare-heatpump-card
+      refrigerant: R410A
+      hours: 24
+      max_lift: 62
+      grid_options:
+        columns: full
+  - type: grid
+    cards:
+    - type: heading
+      heading: Temperatures now
+      icon: mdi:thermometer
+    - type: tile
+      entity: sensor.cu401b_g_secondary_circuit_supply_temperature
+      name: Supply
+    - type: tile
+      entity: sensor.cu401b_g_return_temperature
+      name: Return
+    - type: tile
+      entity: sensor.cu401b_g_primary_circuit_supply_temperature
+      name: Brine from ground
+    - type: tile
+      entity: sensor.cu401b_g_primary_circuit_return_temperature
+      name: Brine to ground
+    - type: tile
+      entity: sensor.hp_brine_delta_t
+      name: Brine ΔT (last run)
+    - type: tile
+      entity: sensor.cu401b_g_dhw_storage_top_temperature
+      name: DHW cylinder
+    - type: tile
+      entity: sensor.hp_dhw_run_max_lift
+      name: Lift, last hot water run
+  - type: grid
+    cards:
+    - type: heading
+      heading: This week
+      icon: mdi:calendar-week
+    - type: heading
+      heading: Means during runs only. Resets on Monday.
+      heading_style: subtitle
+    - type: entities
+      entities:
+      - entity: sensor.hp_heating_supply_this_week
+        name: Supply during heating
+      - entity: sensor.hp_heating_return_this_week
+        name: Return during heating
+      - entity: sensor.hp_brine_in_this_week
+        name: Brine from ground, mean
+      - type: attribute
+        entity: sensor.hp_brine_in_this_week
+        attribute: minimum
+        name: Brine from ground, minimum
+        suffix: °C
+      - entity: sensor.hp_brine_out_this_week
+        name: Brine to ground, mean
+      - type: attribute
+        entity: sensor.hp_brine_out_this_week
+        attribute: minimum
+        name: Brine to ground, minimum
+        suffix: °C
+      - entity: sensor.hp_heating_run_this_week
+        name: Heating run, average
+      - type: attribute
+        entity: sensor.hp_heating_run_this_week
+        attribute: starts
+        name: Heating runs
+      - entity: sensor.hp_dhw_run_this_week
+        name: Hot water run, average
+      - type: attribute
+        entity: sensor.hp_dhw_run_this_week
+        attribute: starts
+        name: Hot water runs
+      - type: divider
+      - entity: sensor.hp_runtime_heating_this_week
+        name: Runtime, heating
+      - entity: sensor.hp_runtime_dhw_this_week
+        name: Runtime, hot water
+      - entity: sensor.hp_runtime_total_this_week
+        name: Runtime, total
+  - type: grid
+    cards:
+    - type: heading
+      heading: Hot water runs
+      icon: mdi:water-boiler
+    - type: heading
+      heading: Highest tc − t0 per run. Limit 62 K (parameter 5080).
+      heading_style: subtitle
+    - type: markdown
+      content: '{%- set s = ''sensor.hp_dhw_run_max_lift'' %}
+
+        {%- set limit = (state_attr(s, ''limit'') or 62) | float %}
+
+        | Ended | tc − t0 | Pressure |
+
+        |:--|--:|--:|
+
+        {%- for r in (state_attr(s, ''runs'') or [])[::-1][:14] %}
+
+        | {{ r.end }} | {{ ''**%.1f K** ⚠️'' % r.lift if r.lift >= limit - 0.5 else ''%.1f K'' % r.lift }} | {{ ''%.1f bar''
+        % r.pressure if r.pressure is number else ''–'' }} |
+
+        {%- else %}
+
+        | No runs yet | | |
+
+        {%- endfor %}
+
+        '
+  - type: grid
+    cards:
+    - type: heading
+      heading: Settings
+      icon: mdi:tune-variant
+    - type: entities
+      state_color: false
+      entities:
+      - type: simple-entity
+        entity: climate.cu401b_g_heating
+        name: Heating mode
+      - type: simple-entity
+        entity: number.cu401b_g_heating_curve_slope
+        name: Heating curve slope
+      - type: simple-entity
+        entity: number.cu401b_g_heating_curve_shift
+        name: Heating curve shift
+      - type: simple-entity
+        entity: number.cu401b_g_normal_temperature
+        name: Room temperature, normal
+      - type: simple-entity
+        entity: number.cu401b_g_reduced_temperature
+        name: Room temperature, reduced
+      - type: simple-entity
+        entity: number.cu401b_g_comfort_temperature
+        name: Room temperature, comfort
+      - type: divider
+      - type: simple-entity
+        entity: water_heater.cu401b_g_domestic_hot_water
+        name: Hot water
+      - type: simple-entity
+        entity: number.cu401b_g_dhw_temperature
+        name: DHW set temperature (normal)
+      - type: simple-entity
+        entity: number.cu401b_g_dhw_secondary_temperature
+        name: DHW set temperature 2 (timer)
+      - type: simple-entity
+        entity: number.cu401b_g_dhw_hysteresis_switch_on
+        name: Hysteresis, on
+      - type: simple-entity
+        entity: number.cu401b_g_dhw_hysteresis_switch_off
+        name: Hysteresis, off
+    - type: tile
+      entity: binary_sensor.cu401b_g_one_time_charge
+      name: One-time charge
+    - type: button
+      name: Start one-time charge
+      icon: mdi:water-boiler
+      show_state: false
+      tap_action:
+        action: perform-action
+        perform_action: button.press
+        target:
+          entity_id: button.cu401b_g_activate_one_time_charge
+        confirmation:
+          text: Start a one-time hot water charge?
+- title: History
+  path: history
+  icon: mdi:chart-timeline-variant
+  type: sections
+  max_columns: 3
+  sections:
+  - type: grid
+    column_span: 3
+    cards:
+    - type: heading
+      heading: Weekly summary
+      icon: mdi:table-large
+    - type: heading
+      heading: One row per finished week (means while running). Added every Monday.
+      heading_style: subtitle
+    - type: markdown
+      content: '{%- set s = ''sensor.hp_weekly_summary'' %}
+
+        {%- macro f(v) %}{{ ''%.1f'' % v if v is number else ''–'' }}{% endmacro %}
+
+        | Week | Brine in | min | Brine out | min | Supply | Return | Heating h | DHW h | Heating run | DHW run |
+
+        |:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+
+        {%- for r in (state_attr(s, ''weeks'') or [])[::-1][:26] %}
+
+        | {{ r.week }} | {{ f(r.brine_in) }} | {{ f(r.brine_in_min) }} | {{ f(r.brine_out) }} | {{ f(r.brine_out_min) }} |
+        {{ f(r.supply) }} | {{ f(r[''return'']) }} | {{ f(r.heating_h) }} | {{ f(r.dhw_h) }} | {{ f(r.heating_run) }} | {{
+        f(r.dhw_run) }} |
+
+        {%- else %}
+
+        | First row on Monday | | | | | | | | | | |
+
+        {%- endfor %}
+
+        '
+  - type: grid
+    column_span: 3
+    cards:
+    - type: heading
+      heading: Weekly history
+      icon: mdi:chart-timeline-variant
+    - type: heading
+      heading: A finished week is shown at the following Monday.
+      heading_style: subtitle
+    - type: statistics-graph
+      title: Supply and return during heating
+      chart_type: line
+      period: week
+      days_to_show: 365
+      stat_types:
+      - mean
+      entities:
+      - entity: sensor.hp_heating_supply_last_week
+        name: Supply
+      - entity: sensor.hp_heating_return_last_week
+        name: Return
+    - type: statistics-graph
+      title: Brine while the compressor runs
+      chart_type: line
+      period: week
+      days_to_show: 365
+      stat_types:
+      - mean
+      entities:
+      - entity: sensor.hp_brine_in_last_week
+        name: From ground, mean
+      - entity: sensor.hp_brine_in_minimum_last_week
+        name: From ground, minimum
+      - entity: sensor.hp_brine_out_last_week
+        name: To ground, mean
+      - entity: sensor.hp_brine_out_minimum_last_week
+        name: To ground, minimum
+    - type: statistics-graph
+      title: Average run length
+      chart_type: bar
+      period: week
+      days_to_show: 365
+      stat_types:
+      - mean
+      entities:
+      - entity: sensor.hp_heating_run_last_week
+        name: Heating
+      - entity: sensor.hp_dhw_run_last_week
+        name: Hot water
+    - type: statistics-graph
+      title: Runtime per week
+      chart_type: bar
+      period: week
+      days_to_show: 365
+      stat_types:
+      - mean
+      entities:
+      - entity: sensor.hp_runtime_heating_last_week
+        name: Heating
+      - entity: sensor.hp_runtime_dhw_last_week
+        name: Hot water
+      - entity: sensor.hp_runtime_total_last_week
+        name: Total
+    - type: statistics-graph
+      title: Weekly brine minimum, ViCare sensors
+      chart_type: line
+      period: week
+      days_to_show: 365
+      stat_types:
+      - min
+      entities:
+      - entity: sensor.cu401b_g_primary_circuit_supply_temperature
+        name: From ground
+      - entity: sensor.cu401b_g_primary_circuit_return_temperature
+        name: To ground
+    - type: statistics-graph
+      title: Highest lift tc − t0 per day (limit 62 K)
+      chart_type: line
+      period: day
+      days_to_show: 60
+      stat_types:
+      - max
+      entities:
+      - entity: sensor.hp_lift_tc_t0
+        name: tc − t0
+    - type: statistics-graph
+      title: Compressor starts and hours per week
+      chart_type: bar
+      period: week
+      days_to_show: 365
+      stat_types:
+      - change
+      entities:
+      - entity: sensor.cu401b_g_compressor_starts
+        name: Starts
+      - entity: sensor.cu401b_g_compressor_hours
+        name: Hours
+    - type: statistics-graph
+      title: Outside temperature per week
+      chart_type: line
+      period: week
+      days_to_show: 365
+      stat_types:
+      - mean
+      - min
+      entities:
+      - entity: sensor.cu401b_g_outside_temperature
+        name: Outside
