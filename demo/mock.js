@@ -10,6 +10,8 @@
     circulation_pump: ["binary_sensor"], domestic_hot_water_circulation_pump: ["binary_sensor"], compressor_phase: ["sensor"],
     domestic_hot_water_charging: ["binary_sensor"], dhw_storage_top_temperature: ["sensor", "°C"], cop_heating: ["sensor"],
     cop_dhw: ["sensor"], compressor_starts: ["sensor"],
+    buffer_main_temperature: ["sensor", "°C"], supply_temperature: ["sensor", "°C"],
+    heater_power: ["sensor", "kW"], mixer_position: ["sensor", "%"], circuit_pump_speed: ["sensor", "%"],
   };
   const cyc = 90 * 60000, onFor = 50 * 60000;
   const at = (t) => {
@@ -24,6 +26,7 @@
       primary_circuit_return_temperature: on ? 1.6 : 4.5, outside_temperature: -0.5, compressor: on ? "on" : "off",
       circulation_pump: "on", domestic_hot_water_circulation_pump: "off", compressor_phase: on ? "heating" : prep ? "preparing" : "pause",
       domestic_hot_water_charging: "off", dhw_storage_top_temperature: 45.9, cop_heating: 4.6, cop_dhw: 3.4, compressor_starts: 40654,
+      buffer_main_temperature: on ? 31 + 3 * k : 33 - 3 * off, supply_temperature: 29.5, heater_power: on && k > 0.8 ? 3 : 0, mixer_position: 42, circuit_pump_speed: 68,
     };
   };
   const now = Date.now();

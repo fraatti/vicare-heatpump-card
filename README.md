@@ -46,11 +46,17 @@ max_lift: 62             # refrigerant controller limit for tc - t0 (Vitotronic 
 | `refrigerant` | `R410A` | Used for tc, t0 and the log p-h diagram; check the rating plate |
 | `hours` | `24` | Trend length |
 | `max_lift` | `62` | Lift limit (K) used by the health check |
-| `heating_circuit` | `floor` | `floor` or `radiators` (label only) |
+| `heating_circuit` | `floor` | `floor` (floor heating loop) or `radiators` |
+| `buffer` | `auto` | Buffer cylinder between the heat pump and the heating circuit: `auto` (drawn if a buffer temperature sensor exists), `yes`, `no` |
+| `mixer` | `false` | Mixing valve (shunt) in the heating circuit |
+| `heater` | `auto` | Electric flow-through heater after the condenser: `auto` (drawn if the `heater` sensor is set), `yes`, `no` |
+| `show_logbook` / `log_markers` | `true` | Logbook text list / logbook markers on the timeline |
 | `cold_water` | `10` | Cold mains water temperature for the cylinder estimate |
 | `show_trend`, `show_info`, `show_logbook` | `true` | Parts of the card |
 | `steady_minutes` | `10` | Minutes from compressor start before the health check |
-| `entities` | – | Override single roles, e.g. `entities: { hot_gas_p: sensor.my_pressure }` |
+| `entities` | – | Use your own entity for any role, e.g. `entities: { hot_gas_p: sensor.my_pressure }`. Also in the visual editor under *Sensors*. The card works without the ViCare integration when the roles are set here. |
+
+Roles: `hot_gas_t`, `hot_gas_p`, `suction_t`, `suction_p`, `liquid_t`, `subcooling`, `superheat`, `compressor`, `phase`, `starts`, `sec_supply`, `sec_return`, `circ_pump`, `circ_pump_speed`, `dhw_charging`, `dhw_top`, `dhw_circ`, `buffer_t`, `circ_supply`, `mixer`, `heater`, `pri_supply`, `pri_return`, `pri_pump`, `outside`, `cop_heating`, `cop_dhw`, `cop_total`. `circ_pump_speed`, `mixer` and `heater` are not provided by the ViCare integration; point them to your own sensors if you have them.
 
 Most refrigerant circuit sensors of the ViCare integration are **disabled by default**. Open the device page, choose *+ N entities not shown* and enable at least hot gas and suction gas temperature and pressure, liquid gas temperature, condenser subcooling and evaporator overheat. The card lists the sensors it is missing.
 
@@ -93,6 +99,8 @@ Kortti näyttää Viessmann-lämpöpumpun kylmäainepiirin samaan tapaan kuin la
 **Käyttö**
 - Raahaa kuvaajaa tai liukusäädintä, niin kaavio näyttää valitun hetken. ‹ ja › vaihtavat päivää, ▶ toistaa historiaa, ⤢ suurentaa kuvaajat ja näyttää lukemat kohdistimen kohdalla, *Nyt* palaa nykyhetkeen.
 - *log p-h* avaa kiertoprosessin piirroksen ja arvion, kun kompressori on käynyt vähintään 10 minuuttia.
+
+**Lämmönjako.** Asetuksissa valitaan lattialämmitys tai patterit, puskurivaraaja (`buffer`), shuntti (`mixer`) ja sähkövastus (`heater`). Osiosta *Anturit* jokaisen arvon voi vaihtaa omaan entiteettiin, myös ilman ViCare-integraatiota.
 
 **Lisäosat** (`examples/`): tc/t0-anturit, käyttövesijaksojen nostokorkeus, viikkotilastot, tapahtumaloki ja valmis kojelauta. Entiteetti-ID:t ovat Vitocal 333-G:n; vaihda ne omaan laitteeseen sopiviksi.
 
