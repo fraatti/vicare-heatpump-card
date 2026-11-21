@@ -4,7 +4,7 @@
  * indicative health check for Viessmann heat pumps using the built-in ViCare
  * integration. MIT License.
  */
-const VHP_VERSION = "0.14.1";
+const VHP_VERSION = "0.14.2";
 
 /* Refrigerant tables generated with CoolProp (IIR reference state).
  * sat: [T °C, p_bubble bar(a), p_dew bar(a), h_liquid kJ/kg, h_vapour kJ/kg]
@@ -1223,7 +1223,7 @@ class VicareHeatpumpCard extends HTMLElement {
     }
     // to the left of x: mixing valve, pump, circuit
     let cur = x, mixX = null, pumpX = null;
-    if (mix) { mixX = cur - 22; cur = mixX - 14; }
+    if (mix) { mixX = cur - (buf ? 22 : 46); cur = mixX - 14; } // keep the valve label clear of the supply riser
     if (buf || mix) { pumpX = cur - 14; cur = pumpX - 12; }
     const xs = mix || buf ? cur - 4 : x;
     const name = rad ? i.radiators : i.floor_heating;
