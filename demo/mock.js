@@ -1,6 +1,7 @@
 // Minimal mock of hass for local previews of the card (synthetic data).
 (function () {
   const dev = "dev1";
+  const Q = new URLSearchParams(location.search), AIR = Q.get("source") === "air", PH = Q.get("phase");
   const R = {
     hot_gas_temperature: ["sensor", "°C"], hot_gas_pressure: ["sensor", "bar"], suction_gas_temperature: ["sensor", "°C"],
     suction_gas_pressure: ["sensor", "bar"], liquid_gas_temperature: ["sensor", "°C"], condenser_subcooling_temperature: ["sensor", "K"],
@@ -11,8 +12,9 @@
     domestic_hot_water_charging: ["binary_sensor"], dhw_storage_top_temperature: ["sensor", "°C"], cop_heating: ["sensor"],
     cop_dhw: ["sensor"], compressor_starts: ["sensor"],
     buffer_main_temperature: ["sensor", "°C"], supply_temperature: ["sensor", "°C"],
-    heater_power: ["sensor", "kW"], mixer_position: ["sensor", "%"], circuit_pump_speed: ["sensor", "%"],
+    heater_power: ["sensor", "kW"], mixer_position: ["sensor", "%"], circuit_pump_speed: ["sensor", "%"], fan_speed: ["sensor", "%"],
   };
+  if (AIR) delete R.primary_circuit_return_temperature; // an air source unit has no brine return
   const cyc = 90 * 60000, onFor = 50 * 60000;
   const at = (t) => {
     const ph = ((t % cyc) + cyc) % cyc, on = ph > 4 * 60000 && ph < onFor, prep = ph <= 4 * 60000;
@@ -27,11 +29,21 @@
       circulation_pump: "on", domestic_hot_water_circulation_pump: "off", compressor_phase: on ? "heating" : prep ? "preparing" : "pause",
       domestic_hot_water_charging: "off", dhw_storage_top_temperature: 45.9, cop_heating: 4.6, cop_dhw: 3.4, compressor_starts: 40654,
       buffer_main_temperature: on ? 31 + 3 * k : 33 - 3 * off, supply_temperature: 29.5, heater_power: on && k > 0.8 ? 3 : 0, mixer_position: 42, circuit_pump_speed: 68,
+      fan_speed: on ? 45 : 0,
     };
+  };
+  // ?phase=defrost|preparing_defrost|passive_defrost|cooling forces the current state
+  const force = (v) => {
+    if (!PH) return v;
+    const run = PH !== "passive_defrost";
+    Object.assign(v, { compressor_phase: PH, compressor: run ? "on" : "off", fan_speed: PH === "defrost" ? 0 : run ? 45 : 30 });
+    if (PH === "defrost") Object.assign(v, { secondary_circuit_supply_temperature: 21, secondary_circuit_return_temperature: 25.1, hot_gas_temperature: 52, suction_gas_temperature: 12 });
+    if (PH === "cooling") Object.assign(v, { secondary_circuit_supply_temperature: 16, secondary_circuit_return_temperature: 20, hot_gas_temperature: 55 });
+    return v;
   };
   const now = Date.now();
   const states = {}, entities = {};
-  const v = at(now);
+  const v = force(at(now));
   for (const [tk, [d, u]] of Object.entries(R)) {
     const id = `${d}.cu401b_g_${tk}`;
     entities[id] = { entity_id: id, platform: "vicare", translation_key: tk, device_id: dev };

@@ -11,6 +11,7 @@ A Home Assistant Lovelace card for Viessmann heat pumps connected through the bu
 - **Refrigerant circuit**: hot gas and suction gas (temperature and pressure), liquid line, condensing (tc) and evaporating (t0) temperatures, subcooling, superheat, heating water and brine temperatures. Pipes are coloured by temperature and moving dots show the flow while the pumps and the compressor run.
 - **Heat exchangers**: the condenser shows desuperheating, condensing and subcooled liquid, the evaporator boiling and superheating. The zone heights follow the measured superheat and subcooling.
 - **Heating circuit, hot water cylinder and brine loop** on wide cards: floor heating loop (or radiators), the cylinder with its coil and a stratification estimate from the single top sensor, the brine pump and loop. A DHW circulation pump is drawn only if its history shows that it has run.
+- **Air source heat pumps**: an outdoor unit with the finned coil and the fan instead of the brine loop, and a 4-way valve. In defrost (and active cooling) the valve reverses the cycle: the hot gas goes to the outdoor coil, the fan stops and the heat is taken from the water. Preparing defrost and passive defrost (fan only) are shown too.
 - **Operating state**: heating, hot water, preparing, pause, defrost or off.
 - **Trends**: temperatures and pressures with a band for every run. Drag across the chart or use the slider to see the circuit at any moment, step a day back or forward, play the history (1, 2 or 5 min/s) or enlarge the charts to read every value at the cursor.
 - **log p-h diagram** with the cycle points, a point table and a health check (superheat, subcooling, hot gas temperature, approaches, ΔT, lift tc − t0 against the controller's limit).
@@ -46,6 +47,7 @@ max_lift: 62             # refrigerant controller limit for tc - t0 (Vitotronic 
 | `refrigerant` | `R410A` | Used for tc, t0 and the log p-h diagram; check the rating plate |
 | `hours` | `24` | Trend length |
 | `max_lift` | `62` | Lift limit (K) used by the health check |
+| `source` | `auto` | Heat source: `ground` (brine loop) or `air` (outdoor unit). `auto` picks air when there is no brine return sensor and no brine pump |
 | `heating_circuit` | `floor` | `floor` (floor heating loop) or `radiators` |
 | `buffer` | `auto` | Buffer cylinder between the heat pump and the heating circuit: `auto` (drawn if a buffer temperature sensor exists), `yes`, `no` |
 | `mixer` | `false` | Mixing valve (shunt) in the heating circuit |
@@ -56,7 +58,7 @@ max_lift: 62             # refrigerant controller limit for tc - t0 (Vitotronic 
 | `steady_minutes` | `10` | Minutes from compressor start before the health check |
 | `entities` | – | Use your own entity for any role, e.g. `entities: { hot_gas_p: sensor.my_pressure }`. Also in the visual editor under *Sensors*. The card works without the ViCare integration when the roles are set here. |
 
-Roles: `hot_gas_t`, `hot_gas_p`, `suction_t`, `suction_p`, `liquid_t`, `subcooling`, `superheat`, `compressor`, `phase`, `starts`, `sec_supply`, `sec_return`, `circ_pump`, `circ_pump_speed`, `dhw_charging`, `dhw_top`, `dhw_circ`, `buffer_t`, `circ_supply`, `mixer`, `heater`, `pri_supply`, `pri_return`, `pri_pump`, `outside`, `cop_heating`, `cop_dhw`, `cop_total`. `circ_pump_speed`, `mixer` and `heater` are not provided by the ViCare integration; point them to your own sensors if you have them.
+Roles: `hot_gas_t`, `hot_gas_p`, `suction_t`, `suction_p`, `liquid_t`, `subcooling`, `superheat`, `compressor`, `phase`, `starts`, `sec_supply`, `sec_return`, `circ_pump`, `circ_pump_speed`, `dhw_charging`, `dhw_top`, `dhw_circ`, `buffer_t`, `circ_supply`, `mixer`, `heater`, `pri_supply`, `pri_return`, `pri_pump`, `fan`, `outside`, `cop_heating`, `cop_dhw`, `cop_total`. `circ_pump_speed`, `mixer`, `heater` and `fan` (fan speed %) are not provided by the ViCare integration; point them to your own sensors if you have them.
 
 Most refrigerant circuit sensors of the ViCare integration are **disabled by default**. Open the device page, choose *+ N entities not shown* and enable at least hot gas and suction gas temperature and pressure, liquid gas temperature, condenser subcooling and evaporator overheat. The card lists the sensors it is missing.
 
@@ -99,6 +101,8 @@ Kortti näyttää Viessmann-lämpöpumpun kylmäainepiirin samaan tapaan kuin la
 **Käyttö**
 - Raahaa kuvaajaa tai liukusäädintä, niin kaavio näyttää valitun hetken. ‹ ja › vaihtavat päivää, ▶ toistaa historiaa, ⤢ suurentaa kuvaajat ja näyttää lukemat kohdistimen kohdalla, *Nyt* palaa nykyhetkeen.
 - *log p-h* avaa kiertoprosessin piirroksen ja arvion, kun kompressori on käynyt vähintään 10 minuuttia.
+
+**Ilma-vesilämpöpumppu.** Asetuksella `source: air` (tai automaattisesti, jos liuoksen paluuanturia ja liuospumppua ei ole) liuospiirin tilalle piirretään ulkoyksikkö, lamellipatteri, puhallin ja 4-tieventtiili. Sulatuksessa venttiili kääntää kierron: kuumakaasu menee ulkoyksikön patteriin, puhallin pysähtyy ja lämpö otetaan vedestä.
 
 **Lämmönjako.** Asetuksissa valitaan lattialämmitys tai patterit, puskurivaraaja (`buffer`), shuntti (`mixer`) ja sähkövastus (`heater`). Osiosta *Anturit* jokaisen arvon voi vaihtaa omaan entiteettiin, myös ilman ViCare-integraatiota.
 

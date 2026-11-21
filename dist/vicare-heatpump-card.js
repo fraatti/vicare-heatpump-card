@@ -4,7 +4,7 @@
  * indicative health check for Viessmann heat pumps using the built-in ViCare
  * integration. MIT License.
  */
-const VHP_VERSION = "0.14.2";
+const VHP_VERSION = "0.15.0";
 
 /* Refrigerant tables generated with CoolProp (IIR reference state).
  * sat: [T °C, p_bubble bar(a), p_dew bar(a), h_liquid kJ/kg, h_vapour kJ/kg]
@@ -16,7 +16,7 @@ const VHP_REFRIGERANTS = {"R410A":{"tc":71.3,"crit":[368.7,49.01],"sat":[[-40,1.
 const VHP_I18N = {
   fi: {
     title: "Lämpöpumppu",
-    mode: { heating: "Lämmitys", dhw: "Käyttövesi", preparing: "Valmistelu", pause: "Tauko", defrost: "Sulatus", cooling: "Jäähdytys", off: "Seis", unknown: "Ei tietoa" },
+    mode: { heating: "Lämmitys", dhw: "Käyttövesi", preparing: "Valmistelu", pause: "Tauko", defrost: "Sulatus", cooling: "Jäähdytys", off: "Seis", unknown: "Ei tietoa", preparing_defrost: "Sulatuksen valmistelu", passive_defrost: "Passiivinen sulatus" },
     live: "Nyt",
     history: "Historia",
     hot_gas: "Kuumakaasu",
@@ -50,6 +50,11 @@ const VHP_I18N = {
     mixer: "Shuntti",
     heater: "Vastus",
     outdoor_air: "Ulkoilma",
+    outdoor_unit: "Ulkoyksikkö",
+    fan: "Puhallin",
+    fan_off: "seis",
+    four_way: "4-tieventtiili",
+    air_in: "Ilma sisään",
     brine_circuit: "Liuospiiri",
     cond_tip: "Lauhdutin. Ylhäällä tulistettu kuumakaasu jäähtyy, keskellä kaasu tiivistyy nesteeksi ja alhaalla neste alijäähtyy. Lämmitysvesi virtaa vastavirtaan alhaalta ylös. Vyöhykkeiden korkeus seuraa kuumakaasun tulistusta ja alijäähdytystä.",
     evap_tip: "Höyrystin. Alhaalle tulee paisuntaventtiililtä kylmää nestettä, joka kiehuu höyryksi liuoksen lämmöllä. Ylhäällä höyry tulistuu ennen kompressoria. Liuos virtaa vastavirtaan ylhäältä alas. Ylävyöhykkeen korkeus seuraa tulistusta.",
@@ -160,18 +165,21 @@ const VHP_I18N = {
       floor: "Lattialämmitys",
       radiators: "Patterit",
       heater: "Sähkövastus (läpivirtaus)",
+      source: "Lämmönlähde",
+      ground: "Maaperä (liuospiiri)",
+      air: "Ulkoilma (ulkoyksikkö)",
       auto: "Automaattinen",
       yes: "Kyllä",
       no: "Ei",
       log_markers: "Lokin merkit aikajanalla",
       cold_water: "Kylmän veden lämpötila",
       entities: "Anturit (tyhjä = automaattinen)",
-      r_hot_gas_t: "Kuumakaasun lämpötila", r_hot_gas_p: "Kuumakaasun paine", r_suction_t: "Imukaasun lämpötila", r_suction_p: "Imukaasun paine", r_liquid_t: "Nestelinjan lämpötila", r_subcooling: "Alijäähdytys", r_superheat: "Tulistus", r_compressor: "Kompressori (päällä/pois)", r_phase: "Kompressorin vaihe", r_starts: "Käynnistykset", r_sec_supply: "Menovesi (lämpöpumppu)", r_sec_return: "Paluuvesi (lämpöpumppu)", r_circ_pump: "Kiertovesipumppu", r_circ_pump_speed: "Kiertovesipumpun nopeus %", r_dhw_charging: "Käyttövesilataus (vaihtoventtiili)", r_dhw_top: "Käyttövesivaraajan lämpötila", r_dhw_circ: "Käyttöveden kiertopumppu", r_buffer_t: "Puskurivaraajan lämpötila", r_circ_supply: "Lämmityspiirin menovesi", r_mixer: "Shuntin avaus %", r_heater: "Sähkövastus (päällä tai teho)", r_pri_supply: "Liuos kaivolta / ilma sisään", r_pri_return: "Liuos kaivoon", r_pri_pump: "Liuospumpun nopeus %", r_outside: "Ulkolämpötila", r_cop_heating: "COP lämmitys", r_cop_dhw: "COP käyttövesi", r_cop_total: "COP yhteensä",
+      r_hot_gas_t: "Kuumakaasun lämpötila", r_hot_gas_p: "Kuumakaasun paine", r_suction_t: "Imukaasun lämpötila", r_suction_p: "Imukaasun paine", r_liquid_t: "Nestelinjan lämpötila", r_subcooling: "Alijäähdytys", r_superheat: "Tulistus", r_compressor: "Kompressori (päällä/pois)", r_phase: "Kompressorin vaihe", r_starts: "Käynnistykset", r_sec_supply: "Menovesi (lämpöpumppu)", r_sec_return: "Paluuvesi (lämpöpumppu)", r_circ_pump: "Kiertovesipumppu", r_circ_pump_speed: "Kiertovesipumpun nopeus %", r_dhw_charging: "Käyttövesilataus (vaihtoventtiili)", r_dhw_top: "Käyttövesivaraajan lämpötila", r_dhw_circ: "Käyttöveden kiertopumppu", r_buffer_t: "Puskurivaraajan lämpötila", r_circ_supply: "Lämmityspiirin menovesi", r_mixer: "Shuntin avaus %", r_heater: "Sähkövastus (päällä tai teho)", r_pri_supply: "Liuos kaivolta / ilma sisään", r_pri_return: "Liuos kaivoon", r_pri_pump: "Liuospumpun nopeus %", r_fan: "Puhaltimen nopeus %", r_outside: "Ulkolämpötila", r_cop_heating: "COP lämmitys", r_cop_dhw: "COP käyttövesi", r_cop_total: "COP yhteensä",
     },
   },
   en: {
     title: "Heat pump",
-    mode: { heating: "Heating", dhw: "Hot water", preparing: "Preparing", pause: "Pause", defrost: "Defrost", cooling: "Cooling", off: "Off", unknown: "Unknown" },
+    mode: { heating: "Heating", dhw: "Hot water", preparing: "Preparing", pause: "Pause", defrost: "Defrost", cooling: "Cooling", off: "Off", unknown: "Unknown", preparing_defrost: "Preparing defrost", passive_defrost: "Passive defrost" },
     live: "Now",
     history: "History",
     hot_gas: "Hot gas",
@@ -205,6 +213,11 @@ const VHP_I18N = {
     mixer: "Mixer",
     heater: "Heater",
     outdoor_air: "Outdoor air",
+    outdoor_unit: "Outdoor unit",
+    fan: "Fan",
+    fan_off: "off",
+    four_way: "4-way valve",
+    air_in: "Air in",
     brine_circuit: "Brine circuit",
     cond_tip: "Condenser. At the top the superheated hot gas cools, in the middle it condenses into liquid and at the bottom the liquid is subcooled. The heating water flows the other way, from bottom to top. The zone heights follow the hot gas superheat and the subcooling.",
     evap_tip: "Evaporator. Cold liquid from the expansion valve enters at the bottom and boils into vapour with heat from the brine. At the top the vapour is superheated before the compressor. The brine flows the other way, from top to bottom. The top zone height follows the superheat.",
@@ -315,13 +328,16 @@ const VHP_I18N = {
       floor: "Floor heating",
       radiators: "Radiators",
       heater: "Electric heater (flow-through)",
+      source: "Heat source",
+      ground: "Ground (brine loop)",
+      air: "Outdoor air (outdoor unit)",
       auto: "Automatic",
       yes: "Yes",
       no: "No",
       log_markers: "Logbook markers on the timeline",
       cold_water: "Cold water temperature",
       entities: "Sensors (empty = automatic)",
-      r_hot_gas_t: "Hot gas temperature", r_hot_gas_p: "Hot gas pressure", r_suction_t: "Suction gas temperature", r_suction_p: "Suction gas pressure", r_liquid_t: "Liquid line temperature", r_subcooling: "Subcooling", r_superheat: "Superheat", r_compressor: "Compressor (on/off)", r_phase: "Compressor phase", r_starts: "Compressor starts", r_sec_supply: "Supply water (heat pump)", r_sec_return: "Return water (heat pump)", r_circ_pump: "Circulation pump", r_circ_pump_speed: "Circulation pump speed %", r_dhw_charging: "Hot water charging (diverter valve)", r_dhw_top: "Hot water cylinder temperature", r_dhw_circ: "DHW circulation pump", r_buffer_t: "Buffer cylinder temperature", r_circ_supply: "Heating circuit supply", r_mixer: "Mixing valve opening %", r_heater: "Electric heater (on or power)", r_pri_supply: "Brine from ground / air in", r_pri_return: "Brine to ground", r_pri_pump: "Brine pump speed %", r_outside: "Outdoor temperature", r_cop_heating: "COP heating", r_cop_dhw: "COP hot water", r_cop_total: "COP total",
+      r_hot_gas_t: "Hot gas temperature", r_hot_gas_p: "Hot gas pressure", r_suction_t: "Suction gas temperature", r_suction_p: "Suction gas pressure", r_liquid_t: "Liquid line temperature", r_subcooling: "Subcooling", r_superheat: "Superheat", r_compressor: "Compressor (on/off)", r_phase: "Compressor phase", r_starts: "Compressor starts", r_sec_supply: "Supply water (heat pump)", r_sec_return: "Return water (heat pump)", r_circ_pump: "Circulation pump", r_circ_pump_speed: "Circulation pump speed %", r_dhw_charging: "Hot water charging (diverter valve)", r_dhw_top: "Hot water cylinder temperature", r_dhw_circ: "DHW circulation pump", r_buffer_t: "Buffer cylinder temperature", r_circ_supply: "Heating circuit supply", r_mixer: "Mixing valve opening %", r_heater: "Electric heater (on or power)", r_pri_supply: "Brine from ground / air in", r_pri_return: "Brine to ground", r_pri_pump: "Brine pump speed %", r_fan: "Fan speed %", r_outside: "Outdoor temperature", r_cop_heating: "COP heating", r_cop_dhw: "COP hot water", r_cop_total: "COP total",
     },
   },
 };
@@ -357,11 +373,12 @@ const VHP_ROLES = {
   circ_pump_speed: { d: "sensor", k: [] },
   mixer: { d: "sensor", k: [] },
   heater: { d: "sensor", k: [] },
+  fan: { d: "sensor", k: [] },
 };
 /* Roles offered in the editor, in this order */
 const VHP_EDIT_ROLES = ["hot_gas_t", "hot_gas_p", "suction_t", "suction_p", "liquid_t", "subcooling", "superheat", "compressor", "phase", "starts",
   "sec_supply", "sec_return", "circ_pump", "circ_pump_speed", "dhw_charging", "dhw_top", "dhw_circ", "buffer_t", "circ_supply", "mixer", "heater",
-  "pri_supply", "pri_return", "pri_pump", "outside", "cop_heating", "cop_dhw", "cop_total"];
+  "pri_supply", "pri_return", "pri_pump", "fan", "outside", "cop_heating", "cop_dhw", "cop_total"];
 /* Roles worth reporting as missing (the circuit view depends on them). */
 const VHP_IMPORTANT = ["hot_gas_t", "hot_gas_p", "suction_t", "suction_p", "liquid_t", "pri_supply", "sec_supply", "compressor", "phase", "dhw_charging"];
 
@@ -381,6 +398,7 @@ const VHP_REFR_ROLES = ["hot_gas_t", "suction_t", "liquid_t"];
 /* Diagram views: full = floor heating + cylinder + brine loop, mid = cylinder with the heating
    circuit as a stub, narrow = heat pump only (phones). Paths that differ per view are in VHP_GEOM. */
 const VHP_VIEWBOX = { full: "-326 0 1178 268", mid: "-172 0 1022 268", narrow: "0 0 686 282" };
+const VHP_VIEWBOX_AIR = { full: "-326 0 1074 268", mid: "-172 0 920 268", narrow: "0 0 744 282" };
 const VHP_GEOM = {
   full: { w_heat: "M70 92 V10 H-196 V120", w_fret: "M-196 252 H0 V224", w_dhw: "M62 100 H-40", ret_x1: 0,
     brine: "M650 220 H815 A15 15 0 0 0 815 190 H714 A14 14 0 0 1 700 176 V114 A14 14 0 0 0 686 100 H652", t_dhw: [56, 92, "end"], arrow: false },
@@ -564,6 +582,7 @@ class VicareHeatpumpCard extends HTMLElement {
           type: "grid",
           name: "",
           schema: [
+            { name: "source", selector: { select: { mode: "dropdown", options: ["auto", "ground", "air"].map((v) => ({ value: v, label: vhpCfgText(v) })) } } },
             { name: "buffer", selector: { select: { mode: "dropdown", options: ["auto", "yes", "no"].map((v) => ({ value: v, label: vhpCfgText(v) })) } } },
             { name: "heating_circuit", selector: { select: { mode: "dropdown", options: ["floor", "radiators"].map((v) => ({ value: v, label: vhpCfgText(v) })) } } },
             { name: "mixer", selector: { boolean: {} } },
@@ -641,6 +660,7 @@ class VicareHeatpumpCard extends HTMLElement {
       show_info: true,
       show_logbook: true,
       log_markers: true,
+      source: "auto",
       buffer: "auto",
       mixer: false,
       heating_circuit: "floor",
@@ -673,9 +693,9 @@ class VicareHeatpumpCard extends HTMLElement {
     this._hass = hass;
     if (!this._config) return;
     if (this._entsRef !== hass.entities || !this._roles) {
-      const g = this._ground;
+      const g = this._ground, a = this._air;
       this._resolve();
-      if (this._built && g !== undefined && g !== this._ground) this._build();
+      if (this._built && g !== undefined && (g !== this._ground || a !== this._air)) this._build();
     }
     if (!this._built) this._build();
     const lb = this._logEid && hass.states[this._logEid];
@@ -781,7 +801,10 @@ class VicareHeatpumpCard extends HTMLElement {
     const b = this._config.buffer, h = this._config.heater;
     this._buffer = yes(b) || (!no(b) && !!roles.buffer_t);
     this._heaterShow = yes(h) || (!no(h) && !!roles.heater);
-    this._ground = !!roles.pri_return || this._config.source === "ground";
+    // Air source: set in the options, or guessed when there is no brine return sensor and no brine pump
+    const src = this._config.source;
+    this._air = src === "air" || (src !== "ground" && !roles.pri_return && !roles.pri_pump && !!(roles.hot_gas_t || roles.compressor || roles.phase));
+    this._ground = !this._air && (!!roles.pri_return || src === "ground");
     const ids = new Set(Object.values(roles));
     this._trackIds = [...ids];
     this._logEid = this._config.logbook_entity || Object.keys(hass.states).find((e) => e.startsWith("sensor.") && (Array.isArray(hass.states[e].attributes?.events) && "total" in hass.states[e].attributes) || Array.isArray(hass.states[e].attributes?.tapahtumat));
@@ -1188,9 +1211,10 @@ class VicareHeatpumpCard extends HTMLElement {
   }
 
   _vb(view) {
-    if (view !== "full" || !this._hl) return VHP_VIEWBOX[view];
-    const left = Math.min(-326, Math.floor(this._hl.left));
-    return `${left} 0 ${852 - left} 268`;
+    // an outdoor unit ends further left than the brine loop
+    if (view !== "full" || !this._hl) return this._air ? VHP_VIEWBOX_AIR[view] : VHP_VIEWBOX[view];
+    const left = Math.min(-326, Math.floor(this._hl.left)), right = this._air ? 748 : 852;
+    return `${left} 0 ${right - left} 268`;
   }
 
   /* Heat distribution on the left of the hot water cylinder: optional buffer cylinder (charged from the
@@ -1403,7 +1427,7 @@ class VicareHeatpumpCard extends HTMLElement {
   /* -------------------------------------------------------- diagram */
   _diagramSvg() {
     const i = this._i;
-    const grd = this._ground;
+    const grd = this._ground, air = this._air;
     const lbl = (this._lbl = (x, y, role, cap, anchor = "middle", id = role, role2 = null) => `
       <g class="val" data-role="${role}"><text x="${x}" y="${y}" text-anchor="${anchor}" class="cap">${cap}</text>
       <text x="${x}" y="${y}" dy="1.3em" text-anchor="${anchor}" class="num" id="v_${id}">–</text></g>${
@@ -1411,7 +1435,7 @@ class VicareHeatpumpCard extends HTMLElement {
       }`);
     const HL = (this._hl = this._heatLayout());
     return `
-    <svg viewBox="${this._vb("full")}" role="img" id="dsvg" aria-label="${i.ph_title}">
+    <svg viewBox="${this._vb("full")}" role="img" id="dsvg" class="${air ? "air" : "ground"}" aria-label="${i.ph_title}">
       <defs>
         <linearGradient id="tankg" x1="0" y1="0" x2="0" y2="1">
           <stop id="tk0" offset="0"/><stop id="tk1" offset=".3"/><stop id="tk2" offset=".7"/><stop id="tk3" offset="1"/></linearGradient>
@@ -1442,11 +1466,28 @@ class VicareHeatpumpCard extends HTMLElement {
         <linearGradient id="ebg" gradientUnits="userSpaceOnUse" x1="0" y1="100" x2="0" y2="220">
           <stop offset="0" style="stop-color: var(--bin-c, var(--vhp-brine))"/><stop offset="1" style="stop-color: var(--bout-c, var(--vhp-brine))"/></linearGradient>
       </defs>
+      ${air ? `<!-- outdoor unit: the refrigerant pipes run inside it to the finned coil -->
+      <g id="odu"><rect x="456" y="44" width="258" height="216" rx="10" class="odu"/>
+        <text x="706" y="254" text-anchor="end" class="cap oducap">${i.outdoor_unit}</text></g>` : ""}
       <!-- refrigerant lines -->
+      ${air ? `
+      <g class="nrm">
+        <line class="rl hot flow" x1="328" y1="100" x2="204" y2="100" marker-end="url(#ah)"/>
+        <line class="rl cold flow" x1="476" y1="100" x2="356" y2="100" marker-end="url(#ah)"/>
+        <line class="rl warm flow" x1="200" y1="220" x2="326" y2="220"/>
+        <line class="rl cold flow" x1="354" y1="220" x2="476" y2="220" marker-end="url(#ah)"/></g>
+      <!-- reversed by the 4-way valve (defrost, cooling): the outdoor coil condenses, the indoor heat exchanger evaporates -->
+      <g class="rev">
+        <line class="rl cold flow" x1="200" y1="100" x2="324" y2="100" marker-end="url(#ah)"/>
+        <line class="rl hot flow" x1="352" y1="100" x2="476" y2="100" marker-end="url(#ah)"/>
+        <line class="rl warm flow" x1="480" y1="220" x2="354" y2="220"/>
+        <line class="rl cold flow" x1="326" y1="220" x2="204" y2="220" marker-end="url(#ah)"/></g>
+      <path class="rl hot flow" d="M340 148 V116" marker-end="url(#ah)"/>
+      <path class="rl cold flow" d="M340 88 V70 H384 V168 H364" marker-end="url(#ah)"/>` : `
       <line class="rl hot flow" x1="318" y1="100" x2="204" y2="100" marker-end="url(#ah)"/>
       <line class="rl cold flow" x1="476" y1="100" x2="362" y2="100" marker-end="url(#ah)"/>
       <line class="rl warm flow" x1="200" y1="220" x2="326" y2="220"/>
-      <line class="rl cold flow" x1="354" y1="220" x2="476" y2="220" marker-end="url(#ah)"/>
+      <line class="rl cold flow" x1="354" y1="220" x2="476" y2="220" marker-end="url(#ah)"/>`}
       <!-- heat exchangers -->
       <rect class="hx hot" x="172" y="88" width="28" height="144" rx="4"/>
       <g class="hxin"><title>${i.cond_tip}</title>
@@ -1464,8 +1505,8 @@ class VicareHeatpumpCard extends HTMLElement {
         <rect x="172" y="88" width="28" height="144" rx="4" class="shade hxs" fill="url(#cylg)"/></g>
       <rect class="hx cold" x="480" y="88" width="28" height="144" rx="4"/>
       <g class="hxin"><title>${i.evap_tip}</title>
-        <rect x="494" y="89" width="13" height="142" class="hxw" fill="url(#ebg)"/>
-        <path d="M508 100 H500.5 V220 H508" class="hxflow hxbrine"/>
+        <rect x="494" y="89" width="13" height="142" class="hxw srcw" fill="url(#ebg)"/>
+        <path d="M508 100 H500.5 V220 H508" class="hxflow hxbrine srcw"/>
         <g clip-path="url(#cl_e)">
           <rect id="e_vap" x="480" y="89" width="14" height="18" class="phgas cold"/>
           <rect id="e_liq" x="480" y="197" width="14" height="34" class="phliq cold"/>
@@ -1476,14 +1517,23 @@ class VicareHeatpumpCard extends HTMLElement {
         <path d="M487.5 116 V100 H480" class="hxflow hxref gasout"/>
         <line x1="494" y1="89" x2="494" y2="231" class="hxwall"/>
         <rect x="480" y="88" width="28" height="144" rx="4" class="shade hxs" fill="url(#cylg)"/></g>
+      ${air ? `<!-- finned air coil -->
+      <g class="fins">${Array.from({ length: 20 }, (_, k) => `<line x1="495" y1="${93 + k * 7}" x2="520" y2="${93 + k * 7}" class="fin"/>`).join("")}</g>
+      <text x="494" y="80" text-anchor="middle" class="frost">❄</text>
+      <g class="melts">${[486, 494, 502, 512].map((x, k) => `<circle cx="${x}" cy="234" r="2" class="melt" style="animation-delay:-${(k * 0.4).toFixed(1)}s"/>`).join("")}</g>
+      <!-- 4-way valve: discharge in from below, suction out at the top; the filled ports show the route -->
+      <g class="fv" data-role="phase"><title>${i.four_way}</title>
+        <polygon class="fvl" points="340,100 328,93 328,107"/><polygon class="fvr" points="340,100 352,93 352,107"/>
+        <polygon class="fvt" points="340,100 333,88 347,88"/><polygon class="fvb" points="340,100 333,112 347,112"/></g>
+      <text x="392" y="86" class="cap" id="t_fv">${i.four_way}</text>` : ""}
       <!-- compressor -->
-      <g class="comp" id="comp" data-role="compressor">
+      <g class="comp" id="comp" data-role="compressor"${air ? ' transform="translate(0 68)"' : ""}>
         <circle cx="340" cy="100" r="20" class="compc"/>
         <g clip-path="url(#ctri)"><g class="stream"><rect x="317" y="82" width="4" height="36"/><rect x="325" y="82" width="4" height="36"/><rect x="333" y="82" width="4" height="36"/><rect x="341" y="82" width="4" height="36"/><rect x="349" y="82" width="4" height="36"/><rect x="357" y="82" width="4" height="36"/><rect x="365" y="82" width="4" height="36"/></g></g>
         <path d="M325 100 L353 86 L353 114 Z" class="compt"/>
         <circle cx="340" cy="100" r="20" class="shade" fill="url(#sphg)"/>
       </g>
-      <text x="340" y="136" text-anchor="middle" class="cap compcap">${i.compressor}</text>
+      ${air ? `<text x="314" y="172" text-anchor="end" class="cap compcap">${i.compressor}</text>` : `<text x="340" y="136" text-anchor="middle" class="cap compcap">${i.compressor}</text>`}
       <!-- expansion valve -->
       <polygon points="326,210 340,220 326,230" class="ev"/>
       <polygon points="354,210 340,220 354,230" class="ev"/>
@@ -1534,39 +1584,51 @@ class VicareHeatpumpCard extends HTMLElement {
       </g>
       <line class="wl ret wflow" id="w_ret" x1="0" y1="220" x2="168" y2="220" marker-end="url(#ah)"/>
       <!-- brine / source side -->
+      <g id="brineside"${air ? ' style="display:none"' : ""}>
       <line class="wl bin bflow" x1="654" y1="100" x2="512" y2="100" marker-end="url(#ah)"/>
       <line class="wl bout bflow" x1="508" y1="220" x2="652" y2="220"/>
       <path class="wl brine bflow" id="brinel" d="M650 220 H815 A15 15 0 0 0 815 190 H714 A14 14 0 0 1 700 176 V114 A14 14 0 0 0 686 100 H652"/>
       <text x="758" y="174" text-anchor="middle" class="cap brinecap">${i.brine_circuit}</text>
-      <g class="brinecap">${lbl(768, 24, "outside", i.outdoor_air)}</g>
+      ${air ? "" : `<g class="brinecap">${lbl(768, 24, "outside", i.outdoor_air)}</g>`}
       <g id="pump" class="pumpsym brinep" data-role="pri_pump" style="display:none">
         <circle cx="668" cy="100" r="9" class="pc"/>
         <g class="ptg" style="transform-origin:668px 100px"><path d="M659 100 L672.5 92.2 L672.5 107.8 Z" class="pt"/></g>
         <text x="668" y="126" text-anchor="end" class="cap" id="v_pri_pump">–</text>
       </g>
+      </g>
+      ${air ? `<!-- fan: outdoor air through the coil -->
+      <g class="airf"><path d="M742 112 H694" marker-end="url(#ah)"/><path d="M742 208 H694" marker-end="url(#ah)"/>
+        <path d="M622 112 H530" marker-end="url(#ah)"/><path d="M622 208 H530" marker-end="url(#ah)"/></g>
+      <g id="fan" class="fan" data-role="fan">
+        <circle cx="656" cy="160" r="24" class="fanc"/>
+        <g class="fanr" style="transform-origin:656px 160px">${[0, 120, 240].map((a) => `<path d="M656 160 C657 149 665 140 674 144 C677 152 667 160 656 160 Z" class="fanb" transform="rotate(${a} 656 160)"/>`).join("")}</g>
+        <circle cx="656" cy="160" r="2.6" class="fanh"/>
+        <text x="656" y="200" text-anchor="middle" class="cap" id="v_fan">${i.fan}</text></g>
+      ${lbl(666, 56, "outside", i.outdoor_air)}
+      <g class="airin">${lbl(574, 56, "pri_supply", i.air_in)}</g>` : ""}
       <!-- values -->
       ${lbl(258, 24, "hot_gas_t", i.hot_gas, "middle", "hot", "hot_gas_p")}
       ${lbl(424, 24, "suction_t", i.suction, "middle", "suc", "suction_p")}
       ${lbl(126, 57, "sec_supply", i.supply)}
       ${lbl(90, 238, "sec_return", i.return)}
       ${lbl(278, 238, "liquid_t", i.liquid)}
-      ${lbl(600, 64, "pri_supply", grd ? i.from_ground : i.from_source)}
-      ${lbl(600, 238, "pri_return", grd ? i.to_ground : i.to_source)}
+      ${air ? "" : `${lbl(600, 64, "pri_supply", grd ? i.from_ground : i.from_source)}
+      ${lbl(600, 238, "pri_return", grd ? i.to_ground : i.to_source)}`}
       <text x="164" y="168" text-anchor="end" class="mid cyc" id="v_tc">tc –</text>
-      <text x="516" y="168" class="mid cyc" id="v_t0">t0 –</text>
-      <text x="516" y="168" dy="1.35em" class="mid cyc lift" id="v_lift"></text>
-      <g class="val" data-role="subcooling"><text x="278" y="174" text-anchor="middle" class="cap">${i.subcooling}</text><text x="278" y="174" dy="1.3em" text-anchor="middle" class="num" id="v_sc">–</text></g>
-      <g class="val" data-role="superheat"><text x="424" y="126" text-anchor="middle" class="cap">${i.superheat}</text><text x="424" y="126" dy="1.3em" text-anchor="middle" class="num" id="v_sh">–</text></g>
+      <text x="${air ? 528 : 516}" y="168" class="mid cyc" id="v_t0">t0 –</text>
+      <text x="${air ? 528 : 516}" y="168" dy="1.35em" class="mid cyc lift" id="v_lift"></text>
+      <g class="val" data-role="subcooling"><text x="${air ? 258 : 278}" y="${air ? 128 : 174}" text-anchor="middle" class="cap">${i.subcooling}</text><text x="${air ? 258 : 278}" y="${air ? 128 : 174}" dy="1.3em" text-anchor="middle" class="num" id="v_sc">–</text></g>
+      <g class="val" data-role="superheat"><text x="${air ? 396 : 424}" y="126" text-anchor="${air ? "start" : "middle"}" class="cap">${i.superheat}</text><text x="${air ? 396 : 424}" y="126" dy="1.3em" text-anchor="${air ? "start" : "middle"}" class="num" id="v_sh">–</text></g>
       <!-- sensor markers on the pipes -->
-      <g class="sm" data-role="hot_gas_t"><circle cx="258" cy="100" r="4.5" class="smc hot"/></g>
-      <g class="sm" data-role="suction_t"><circle cx="424" cy="100" r="4.5" class="smc cold"/></g>
+      <g class="sm" data-role="hot_gas_t"><circle cx="${air ? 340 : 258}" cy="${air ? 134 : 100}" r="4.5" class="smc hot"/></g>
+      <g class="sm" data-role="suction_t"><circle cx="${air ? 384 : 424}" cy="${air ? 120 : 100}" r="4.5" class="smc cold"/></g>
       <g class="sm" data-role="liquid_t"><circle cx="278" cy="220" r="4.5" class="smc warm"/></g>
       <g class="sm" data-role="sec_supply"><circle cx="126" cy="100" r="4.5" class="smc sup"/></g>
       <g class="sm" data-role="sec_return"><circle cx="90" cy="220" r="4.5" class="smc ret"/></g>
-      <g class="sm" data-role="pri_supply"><circle cx="600" cy="100" r="4.5" class="smc bin"/></g>
-      <g class="sm" data-role="pri_return"><circle cx="600" cy="220" r="4.5" class="smc bout"/></g>
-      <text x="186" y="252" text-anchor="middle" class="cap hxcap">${i.condenser}</text>
-      <text x="494" y="252" text-anchor="middle" class="cap hxcap">${i.evaporator}</text>
+      ${air ? "" : `<g class="sm" data-role="pri_supply"><circle cx="600" cy="100" r="4.5" class="smc bin"/></g>
+      <g class="sm" data-role="pri_return"><circle cx="600" cy="220" r="4.5" class="smc bout"/></g>`}
+      <text x="186" y="252" text-anchor="middle" class="cap hxcap" id="hxcap_c">${i.condenser}</text>
+      <text x="494" y="252" text-anchor="middle" class="cap hxcap" id="hxcap_e">${i.evaporator}</text>
     </svg>`;
   }
 
@@ -1682,8 +1744,30 @@ class VicareHeatpumpCard extends HTMLElement {
     $("diagram").firstElementChild.classList.toggle("brineon", brineOn);
     $("diagram").firstElementChild.classList.toggle("wateron", compOn || (!buf && this._on("circ_pump")));
     $("diagram").firstElementChild.classList.toggle("circon", buf && cpOn);
-    const running = ["heating", "dhw", "cooling", "defrost"].includes(mode);
+    const phase = (this._raw("phase") || "").replace(/-/g, "_");
+    // passive defrost melts the coil with the fan only; the compressor stays off
+    const running = ["heating", "dhw", "cooling"].includes(mode) || (mode === "defrost" && phase !== "passive_defrost" && (!this._roles.compressor || compOn));
     const svg = $("diagram").firstElementChild;
+    if (this._air) {
+      // Reverse cycle: in defrost (and active cooling) the 4-way valve sends the hot gas to the outdoor coil,
+      // the fan stops and the heat comes from the water. Preparation only heats the water first.
+      const rev = (phase === "defrost" && running) || (mode === "cooling" && running);
+      svg.classList.toggle("reversed", rev);
+      const fv = this._val("fan");
+      const fanOn = isFinite(fv) ? fv > 0 : (running && !rev) || phase === "passive_defrost";
+      svg.classList.toggle("fanon", fanOn);
+      svg.style.setProperty("--fan-s", `${(isFinite(fv) && fv > 0 ? Math.max(0.3, Math.min(3, 45 / fv)) : 0.9).toFixed(2)}s`);
+      this._set("v_fan", isFinite(fv) ? `${i.fan} ${this._fmt(fv, 0)} %` : fanOn ? i.fan : `${i.fan} ${i.fan_off}`);
+      svg.classList.toggle("frosty", phase.includes("defrost"));
+      svg.classList.toggle("melting", phase === "defrost" || phase === "passive_defrost");
+      this._set("hxcap_c", rev ? i.evaporator : i.condenser);
+      this._set("hxcap_e", rev ? i.condenser : i.evaporator);
+      if (rev) {
+        // the high pressure side is now outdoors
+        this._set("v_tc", `t0 ${f(t0)}`);
+        this._set("v_t0", `tc ${f(tc)}`);
+      }
+    }
     const tint = (name, c) => (c ? svg.style.setProperty(name, c) : svg.style.removeProperty(name));
     tint("--sup-c", vhpScale(VHP_WATER_SCALE, this._val("sec_supply")));
     tint("--ret-c", vhpScale(VHP_WATER_SCALE, this._val("sec_return")));
@@ -1724,7 +1808,7 @@ class VicareHeatpumpCard extends HTMLElement {
     svg.classList.toggle("running", running);
     svg.classList.toggle("todhw", this._on("dhw_charging"));
     const m = $("mode");
-    m.textContent = i.mode[mode] || mode;
+    m.textContent = (mode === "defrost" && i.mode[phase]) || i.mode[mode] || mode;
     m.style.setProperty("--mc", VHP_MODE_COLORS[mode] === "transparent" ? "var(--secondary-text-color)" : VHP_MODE_COLORS[mode]);
     m.dataset.mode = mode;
     this._set("when", this._t === null ? i.live : `${i.history} · ${this._fmtTime(this._t)}`);
@@ -1765,7 +1849,7 @@ class VicareHeatpumpCard extends HTMLElement {
     this._lastTrend = Date.now();
     const i = this._i;
     const $ = (id) => this.shadowRoot.getElementById(id);
-    const roleName = { hot_gas_t: i.hot_gas, sec_supply: i.supply, sec_return: i.return, pri_supply: this._ground ? i.from_ground : i.from_source, pri_return: this._ground ? i.to_ground : i.to_source, suction_t: i.suction, liquid_t: i.liquid, hot_gas_p: i.hot_gas, suction_p: i.suction };
+    const roleName = { hot_gas_t: i.hot_gas, sec_supply: i.supply, sec_return: i.return, pri_supply: this._air ? i.air_in : this._ground ? i.from_ground : i.from_source, pri_return: this._ground ? i.to_ground : i.to_source, suction_t: i.suction, liquid_t: i.liquid, hot_gas_p: i.hot_gas, suction_p: i.suction };
     const avail = VHP_TEMP_SERIES.filter((s) => this._roles?.[s.role]);
     $("legend").innerHTML = avail
       .map((s) => `<button class="lg ${this._seriesOn[s.role] ? "on" : ""}" data-role="${s.role}" style="--c:${s.color}"><span class="dot"></span>${roleName[s.role]}</button>`)
@@ -2221,7 +2305,7 @@ ha-card { padding: 14px 16px 12px; overflow: hidden; container-type: inline-size
 .btn.on { border-color: var(--primary-color); color: var(--primary-color); }
 .btn.icon { padding: 3px 6px; }
 .diagram svg { width: 100%; height: auto; display: block; margin-top: 4px; }
-.diagram.narrow .compcap, .diagram.narrow .hxcap, .diagram.tight .evcap { display: none; }
+.diagram.narrow .compcap, .diagram.narrow .hxcap, .diagram.tight .evcap, .diagram.narrow #t_fv, .diagram.narrow .airin, .diagram.narrow .oducap, .diagram.narrow svg.air #v_lift { display: none; }
 .diagram.narrow .val[data-role="sec_supply"] { transform: translate(4px, -12px); }
 .diagram.narrow .val[data-role="sec_supply"] .cap { display: none; }
 .diagram.narrow #t_heat { transform: translateY(-6px); }
@@ -2306,6 +2390,27 @@ svg.todhw .brh, svg:not(.todhw) .brd { opacity: .3; stroke-dasharray: 3 4; }
 svg.todhw .floor, svg:not(.todhw) .coil { stroke: var(--secondary-text-color); }
 svg:not(.todhw) #t_heat, svg.todhw #t_dhw { fill: var(--primary-text-color); font-weight: 500; }
 .wl.brine { stroke: url(#brinegr); opacity: 1; stroke-width: 3.2; }
+.odu { fill: color-mix(in srgb, #7aa7e0 7%, transparent); stroke: color-mix(in srgb, var(--secondary-text-color) 45%, transparent); stroke-width: 1; stroke-dasharray: 5 3; }
+svg.reversed .nrm, svg:not(.reversed) .rev { display: none; }
+svg.air .srcw { display: none; }
+.fin { stroke: var(--vhp-cold); stroke-width: 1; opacity: .5; }
+svg.reversed .fin { stroke: var(--vhp-hot); }
+.fv polygon { stroke: var(--primary-text-color); stroke-width: 1; stroke-linejoin: round; filter: drop-shadow(0 1px 1.2px rgba(0,0,0,.2)); }
+svg:not(.reversed) .fv :is(.fvb, .fvl), svg.reversed .fv :is(.fvb, .fvr) { fill: var(--vhp-hot); }
+svg:not(.reversed) .fv :is(.fvr, .fvt), svg.reversed .fv :is(.fvl, .fvt) { fill: var(--vhp-cold); }
+svg.reversed #t_fv { fill: var(--primary-text-color); font-weight: 500; }
+svg.reversed .hx.hot { fill: color-mix(in srgb, var(--vhp-cold) 16%, transparent); stroke: var(--vhp-cold); }
+svg.reversed .hx.cold { fill: color-mix(in srgb, var(--vhp-hot) 16%, transparent); stroke: var(--vhp-hot); }
+svg.reversed .hxin > g, svg.reversed .hxref { display: none; }
+.fanc { fill: var(--card-background-color, #fff); stroke: var(--primary-text-color); stroke-width: 1.4; filter: drop-shadow(0 1.5px 1.8px rgba(0,0,0,.22)); }
+.fanb { fill: #7aa7e0; opacity: .45; } svg.fanon .fanb { opacity: .95; }
+.fanh { fill: var(--primary-text-color); }
+.fan { cursor: pointer; }
+.airf path { fill: none; stroke: #7aa7e0; stroke-width: 1.6; stroke-linecap: round; opacity: .25; }
+svg.fanon .airf path { opacity: .9; }
+.frost, .melt { display: none; }
+svg.frosty .frost { display: inline; fill: #64b5f6; font-size: 15px; }
+svg.melting .melt { display: inline; fill: #64b5f6; transform-box: fill-box; }
 .wl.dhwout { stroke: var(--tank-c, var(--vhp-hot)); opacity: 1; stroke-width: 2.6; }
 .wl.coldin { stroke: #4a90d9; opacity: .9; stroke-width: 2.6; }
 .tee { fill: var(--ret-c, var(--vhp-water)); }
@@ -2334,7 +2439,10 @@ svg:not(.todhw) #t_heat, svg.todhw #t_dhw { fill: var(--primary-text-color); fon
   svg.running .gdot { animation-name: vhpgasd; animation-timing-function: linear; animation-iteration-count: infinite; }
   svg.running .gdot.up { animation-name: vhpgasu; }
   .pumpsym.on .ptg { animation: vhpspin 1.6s linear infinite; }
+  svg.fanon .fanr { animation: vhpspin var(--fan-s, .9s) linear infinite; }
+  svg.melting .melt { animation: vhpmelt 1.6s ease-in infinite; }
 }
+@keyframes vhpmelt { 0% { transform: translateY(-4px); opacity: 0; } 25% { opacity: 1; } 100% { transform: translateY(12px); opacity: 0; } }
 @keyframes vhpflow { to { stroke-dashoffset: -14; } }
 @keyframes vhpdots { to { stroke-dashoffset: -11.1; } }
 @keyframes vhphxf { to { stroke-dashoffset: -10; } }
