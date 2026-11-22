@@ -2,6 +2,8 @@
 
 A Home Assistant Lovelace card for Viessmann heat pumps (ground and air source) connected through the built-in **ViCare** integration. It draws the refrigerant circuit the way the heat pump's own service display does, lets you scrub and play back the history, and shows the operating point in a **log p-h diagram** with an indicative health check.
 
+**[Try the live demo](https://fraatti.github.io/vicare-heatpump-card/demo/)** in your browser, no Home Assistant needed: a synthetic Vitocal 333-G with a 24-hour history and snapshots of real units. Examples: [air source in defrost](https://fraatti.github.io/vicare-heatpump-card/demo/?source=air&phase=defrost), [two heating circuits](https://fraatti.github.io/vicare-heatpump-card/demo/?circuits=2&circuit2=floor&mixer2=1), [failed high pressure sensor](https://fraatti.github.io/vicare-heatpump-card/demo/?cycle=30&fault=hp).
+
 *Suomenkielinen ohje on alempana.*
 
 ![Card: ground source heat pump](images/card.png)
@@ -91,7 +93,7 @@ Copy the packages to `/config/packages` (`homeassistant: packages: !include_dir_
 
 ## Development
 
-`demo/index.html` shows the card without Home Assistant. It has a synthetic Vitocal 333-G with a 24-hour history (`demo/mock.js`) and snapshots of real units from [PyViCare](https://github.com/openviess/PyViCare)'s test data (Apache-2.0): Vitocal 250-A, 252-A, 222-S, 200-A (two ViCare devices) and 333-G. `tools/make_demo_models.py` rebuilds `demo/models.js` from those files. Open the page directly or through any local web server; URL parameters: `model`, `lang`, `source`, `phase`, `buffer`, `mixer`, `circuit`, `heater`, `split`, and for a second heating circuit `circuits=2` (adds `supply_temperature_2` and `circulation_pump_2` to the synthetic unit), `circuit2` (`floor`, `radiators`, `none`), `mixer2=1`, `name1`, `name2`, and `fault=hp` or `fault=lp` (a failed pressure transmitter) with `cycle=<minutes>` (where "now" is in the synthetic 90-minute cycle, e.g. 30 running, 89 stopped, which is not checked).
+`demo/index.html` (online: https://fraatti.github.io/vicare-heatpump-card/demo/) shows the card without Home Assistant. It has a synthetic Vitocal 333-G with a 24-hour history (`demo/mock.js`) and snapshots of real units from [PyViCare](https://github.com/openviess/PyViCare)'s test data (Apache-2.0): Vitocal 250-A, 252-A, 222-S, 200-A (two ViCare devices) and 333-G. `tools/make_demo_models.py` rebuilds `demo/models.js` from those files. Open the page directly or through any local web server; URL parameters: `model`, `lang`, `source`, `phase`, `buffer`, `mixer`, `circuit`, `heater`, `split`, and for a second heating circuit `circuits=2` (adds `supply_temperature_2` and `circulation_pump_2` to the synthetic unit), `circuit2` (`floor`, `radiators`, `none`), `mixer2=1`, `name1`, `name2`, and `fault=hp` or `fault=lp` (a failed pressure transmitter) with `cycle=<minutes>` (where "now" is in the synthetic 90-minute cycle, e.g. 30 running, 89 stopped, which is not checked).
 
 ## Limitations
 
@@ -107,6 +109,8 @@ Refrigerant properties were generated with [CoolProp](http://www.coolprop.org/).
 ## Suomeksi
 
 Kortti näyttää Viessmann-lämpöpumpun kylmäainepiirin samaan tapaan kuin laitteen oma huoltonäyttö. Siinä on lisäksi lattialämmitys, käyttövesivaraaja ja liuospiiri, trendit, historian kelaus ja toisto sekä log p-h -piirros, jossa on suuntaa antava arvio toiminnasta. Kortti käyttää ViCare-integraation omia tietoja ja tunnistaa anturit itse.
+
+**[Kokeile demoa selaimessa](https://fraatti.github.io/vicare-heatpump-card/demo/?lang=fi)** ilman Home Assistantia.
 
 **Asennus**
 1. Asetukset → *Marketplace* → *Add from link* → tämän repositorion osoite (Home Assistant 2026.11 alkaen; vanhemmissa HACS → ⋮ → *Custom repositories*, tyyppi *Dashboard*). Tai kopioi `dist/vicare-heatpump-card.js` kansioon `/config/www/` ja lisää resurssi `/local/vicare-heatpump-card.js?v=1` (JavaScript-moduuli).
@@ -137,6 +141,8 @@ Arvion rajat ovat yleisiä ohjearvoja maa- ja ilmalämpöpumpuille, eivät valmi
 
 Kortet visar Viessmann-värmepumpens köldmediekrets på samma sätt som aggregatets egen servicedisplay. Dessutom visas golvvärme eller radiatorer, varmvattenberedare och köldbärarkrets (eller utedel), trender, uppspelning av historiken och ett log p-h-diagram med en vägledande bedömning av driften. Kortet använder den inbyggda ViCare-integrationens data och hittar givarna själv. Språket följer Home Assistants språkinställning.
 
+**[Prova demon i webbläsaren](https://fraatti.github.io/vicare-heatpump-card/demo/?lang=sv)** utan Home Assistant.
+
 **Två värmekretsar.** En andra värmekrets (`heating_circuit_2`, `mixer_2`) ritas under den första när aggregatet har en andra framledningsgivare eller cirkulationspump (entiteter som slutar på `_2`), eller när kretsens typ väljs i inställningarna. Varje krets färgas efter sin egen framledningstemperatur, och kretsarna kan få egna namn (`circuit_name`, `circuit_name_2`).
 
 **Installation**
@@ -153,6 +159,8 @@ Bedömningens gränser är allmänna riktvärden för berg- och luftvärmepumpar
 ## Deutsch
 
 Die Karte zeigt den Kältekreis einer Viessmann-Wärmepumpe so wie das Servicedisplay des Geräts. Dazu kommen Fußbodenheizung oder Heizkörper, Warmwasserspeicher und Solekreis (oder Außeneinheit), Trends, Wiedergabe des Verlaufs und ein log p-h-Diagramm mit einer orientierenden Bewertung des Betriebs. Die Karte nutzt die Daten der integrierten ViCare-Integration und findet die Sensoren selbst. Die Sprache folgt der Spracheinstellung von Home Assistant.
+
+**[Demo im Browser ausprobieren](https://fraatti.github.io/vicare-heatpump-card/demo/?lang=de)** ohne Home Assistant.
 
 **Zwei Heizkreise.** Ein zweiter Heizkreis (`heating_circuit_2`, `mixer_2`) wird unter dem ersten gezeichnet, wenn das Gerät einen zweiten Vorlaufsensor oder eine zweite Heizkreispumpe hat (Entitäten mit der Endung `_2`) oder wenn der Typ des Kreises in den Einstellungen gewählt ist. Jeder Kreis wird nach seiner eigenen Vorlauftemperatur eingefärbt, und die Kreise können eigene Namen erhalten (`circuit_name`, `circuit_name_2`).
 
