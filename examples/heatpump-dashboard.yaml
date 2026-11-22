@@ -15,7 +15,6 @@ views:
     - type: custom:vicare-heatpump-card
       refrigerant: R410A
       hours: 24
-      max_lift: 62
       grid_options:
         columns: full
   - type: grid

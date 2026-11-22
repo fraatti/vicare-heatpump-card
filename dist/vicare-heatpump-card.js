@@ -4,7 +4,7 @@
  * indicative health check for Viessmann heat pumps using the built-in ViCare
  * integration. MIT License.
  */
-const VHP_VERSION = "1.1.0";
+const VHP_VERSION = "1.2.0";
 
 /* Refrigerant tables generated with CoolProp (IIR reference state).
  * sat: [T °C, p_bubble bar(a), p_dew bar(a), h_liquid kJ/kg, h_vapour kJ/kg]
@@ -126,7 +126,6 @@ const VHP_I18N = {
       cond_approach: "Lauhduttimen lämpötilaero",
       brine_dt: "Keruupiirin ΔT",
       water_dt: "Lämmityspiirin ΔT",
-      lift: "Lämpötilaero tc − t0",
       ratio: "Painesuhde",
       carnot: "Carnot-COP",
       expected: "Odotettu COP",
@@ -139,7 +138,6 @@ const VHP_I18N = {
       subcooling_high: "Suuri alijäähdytys: kylmäainetta voi olla liikaa tai nestelinjassa on kuristus.",
       discharge_high: "Korkea kuumakaasun lämpötila kuormittaa kompressoria.",
       discharge_sh_low: "Pieni kuumakaasun tulistus: mahdollinen märkä puristus.",
-      lift_high: "Lähellä kylmäainepiirin säätimen rajaa ({max} K, parametri 5080). Rajalla säädin pysäyttää kompressorin ja kirjaa ohjeen (Kylmäainepiiri 07, koodi 31). Huolto-ohjeen toimenpide: laske menoveden lämpötilaa, esim. käyttöveden tavoitetta tai lämpökäyrää.",
       air_approach_high: "Suuri ero ulkoilman ja höyrystymisen välillä: patteri voi olla jäätynyt tai likainen, tai ilmavirta on pieni (puhallin, lumi, lehdet).",
       evap_approach_high: "Suuri ero keruuliuoksen ja höyrystymisen välillä: keruupiirin virtaus voi olla pieni tai höyrystin likainen.",
       cond_approach_high: "Suuri ero lauhtumisen ja menoveden välillä: lämmityspuolen virtaus voi olla pieni tai lauhdutin likainen.",
@@ -172,7 +170,6 @@ const VHP_I18N = {
       show_logbook: "Näytä tapahtumaloki",
       logbook_entity: "Tapahtumaloki-anturi (valinnainen)",
       steady_minutes: "Vakiintumisaika arviolle",
-      max_lift: "Suurin tc − t0 (5080)",
       pressure_type: "Paineiden tyyppi",
       absolute: "Absoluuttinen (bar a)",
       gauge: "Ylipaine (bar g)",
@@ -306,7 +303,6 @@ const VHP_I18N = {
       cond_approach: "Condenser approach",
       brine_dt: "Brine ΔT",
       water_dt: "Heating water ΔT",
-      lift: "Lift tc − t0",
       ratio: "Pressure ratio",
       carnot: "Carnot COP",
       expected: "Expected COP",
@@ -319,7 +315,6 @@ const VHP_I18N = {
       subcooling_high: "High subcooling: overcharge or a restriction in the liquid line.",
       discharge_high: "High hot gas temperature stresses the compressor.",
       discharge_sh_low: "Low hot gas superheat: possible wet compression.",
-      lift_high: "Close to the refrigerant controller limit ({max} K, parameter 5080). At the limit the controller stops the compressor and logs a note (refrigerant circuit 07, code 31). Service manual measure: lower the flow temperature, e.g. the DHW set temperature or heating curve.",
       air_approach_high: "Large difference between outdoor air and evaporation: the coil may be iced or dirty, or the airflow is low (fan, snow, leaves).",
       evap_approach_high: "Large difference between brine and evaporation: low brine flow or a fouled evaporator.",
       cond_approach_high: "Large difference between condensation and supply water: low water flow or a fouled condenser.",
@@ -352,7 +347,6 @@ const VHP_I18N = {
       show_logbook: "Show logbook",
       logbook_entity: "Logbook sensor (optional)",
       steady_minutes: "Settling time for assessment",
-      max_lift: "Max. tc − t0 (5080)",
       pressure_type: "Pressure type",
       absolute: "Absolute (bar a)",
       gauge: "Gauge (bar g)",
@@ -646,7 +640,6 @@ class VicareHeatpumpCard extends HTMLElement {
           name: "",
           schema: [
             { name: "steady_minutes", selector: { number: { min: 0, max: 60, step: 1, mode: "box", unit_of_measurement: "min" } } },
-            { name: "max_lift", selector: { number: { min: 40, max: 80, step: 1, mode: "box", unit_of_measurement: "K" } } },
             {
               name: "pressure_type",
               selector: { select: { mode: "dropdown", options: [{ value: "absolute", label: "bar a" }, { value: "gauge", label: "bar g" }] } },
@@ -708,7 +701,6 @@ class VicareHeatpumpCard extends HTMLElement {
       heating_circuit: "floor",
       heater: "auto",
       steady_minutes: 10,
-      max_lift: 62,
       pressure_type: "absolute",
       entities: {},
       ...config,
@@ -1770,7 +1762,6 @@ class VicareHeatpumpCard extends HTMLElement {
       ${lbl(600, 238, "pri_return", grd ? i.to_ground : i.to_source)}`}
       <text x="164" y="168" text-anchor="end" class="mid cyc" id="v_tc">tc –</text>
       <text x="${air ? 528 : 516}" y="168" class="mid cyc" id="v_t0">t0 –</text>
-      <text x="${air ? 528 : 516}" y="168" dy="1.35em" class="mid cyc lift" id="v_lift"></text>
       <g class="val" data-role="subcooling"><text x="${air ? 258 : 278}" y="${air ? 128 : 174}" text-anchor="middle" class="cap">${i.subcooling}</text><text x="${air ? 258 : 278}" y="${air ? 128 : 174}" dy="1.3em" text-anchor="middle" class="num" id="v_sc">–</text></g>
       <g class="val" data-role="superheat"><text x="${air ? 396 : 424}" y="126" text-anchor="${air ? "start" : "middle"}" class="cap">${i.superheat}</text><text x="${air ? 396 : 424}" y="126" dy="1.3em" text-anchor="${air ? "start" : "middle"}" class="num" id="v_sh">–</text></g>
       <!-- sensor markers on the pipes -->
@@ -1849,7 +1840,7 @@ class VicareHeatpumpCard extends HTMLElement {
     if (!isFinite(sc) && !hs.est) sc = tcB - tLiq;
     let sh = this._val("superheat");
     if (!isFinite(sh) || (sh <= 0.2 && tSuc - t0 > 1)) sh = tSuc - t0;
-    // With the compressor off the pressures equalise: superheat, subcooling and the lift mean nothing.
+    // With the compressor off the pressures equalise: superheat and subcooling mean nothing.
     const compOn = this._roles.compressor ? this._on("compressor") : ["heating", "cooling"].includes(this._raw("phase"));
     this._set("v_sc", compOn && isFinite(sc) ? this._fmt(sc) + " K" : "–");
     this._set("v_sh", compOn && isFinite(sh) ? this._fmt(sh) + " K" : "–");
@@ -1864,9 +1855,6 @@ class VicareHeatpumpCard extends HTMLElement {
     const hS = compOn && isFinite(sh) ? clamp(18, 64, 10 + sh * 4) : 18;
     zone("c_gas", 89, hD); zone("cg_r", 89, hD); zone("c_liq", 231 - hL, hL); zone("cz_r", 89 + hD, 142 - hD - hL);
     zone("e_vap", 89, hS); zone("ev_r", 89, hS); zone("e_liq", 197, 34); zone("ez_r", 89 + hS, 142 - hS);
-    const lift = tc - t0, maxLift = +this._config.max_lift || 62;
-    this._set("v_lift", compOn && isFinite(lift) ? `tc − t0 ${ap}${this._fmt(lift)} K` : "");
-    $("v_lift").classList.toggle("near", compOn && lift > maxLift - 3);
     $("diagram").firstElementChild.classList.toggle("stopped", !compOn);
     $("diagram").title = compOn ? "" : i.stopped;
     const mode = this._mode();
@@ -2314,10 +2302,6 @@ class VicareHeatpumpCard extends HTMLElement {
       st = range(wdt, 2, 10, 1, 12);
       add("water_dt", wdt, "K", st, st && st !== "ok" ? (wdt < 2 ? i.msg.water_dt_low : i.msg.water_dt_high) : "");
     }
-    const lift = cy.est ? NaN : cy.tc - cy.t0;
-    const maxLift = +this._config.max_lift || 62;
-    st = !isFinite(lift) ? null : lift <= maxLift - 3 ? "ok" : "warn";
-    add("lift", lift, "K", st, st && st !== "ok" ? i.msg.lift_high.replace("{max}", maxLift) : "");
     if (!cy.est) {
       add("ratio", cy.p2 / cy.p1, "", "info", "", 2);
       const carnot = (cy.tcM + 273.15) / (cy.tcM - cy.t0);
@@ -2541,7 +2525,7 @@ ha-card { padding: 14px 16px 12px; overflow: hidden; container-type: inline-size
 .btn.icon { padding: 3px 6px; }
 .diagram svg { width: 100%; height: auto; display: block; margin-top: 4px; }
 .num.spd { font-size: calc(11.5px * var(--k, 1)); font-weight: 500; fill: var(--secondary-text-color); }
-.diagram.narrow .compcap, .diagram.narrow .hxcap, .diagram.tight .evcap, .diagram.narrow #t_fv, .diagram.narrow .airin, .diagram.narrow .oducap, .diagram.narrow svg.air #v_lift { display: none; }
+.diagram.narrow .compcap, .diagram.narrow .hxcap, .diagram.tight .evcap, .diagram.narrow #t_fv, .diagram.narrow .airin, .diagram.narrow .oducap { display: none; }
 .diagram.narrow .val[data-role="sec_supply"] { transform: translate(4px, -12px); }
 .diagram.narrow .val[data-role="sec_supply"] .cap { display: none; }
 .diagram.narrow #t_heat { transform: translateY(-6px); }
@@ -2550,8 +2534,6 @@ ha-card { padding: 14px 16px 12px; overflow: hidden; container-type: inline-size
 .num.sub { font-weight: 400; }
 .mid { font-size: calc(13px * var(--k, 1)); fill: var(--primary-text-color); }
 .stopped .cyc { fill: var(--secondary-text-color); opacity: .6; }
-.lift { font-size: calc(12px * var(--k, 1)); fill: var(--secondary-text-color); }
-.lift.near { fill: var(--error-color, #db4437); font-weight: 600; }
 .lgi { font-weight: 400; }
 .val[data-role], .chip[data-role], [data-role].comp, #tw { cursor: pointer; }
 .val[data-role]:hover .num { fill: var(--primary-color); }

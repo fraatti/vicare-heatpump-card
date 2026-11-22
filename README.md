@@ -18,7 +18,7 @@ A Home Assistant Lovelace card for Viessmann heat pumps (ground and air source) 
 - **Operating state**: heating, hot water, preparing, pause, defrost or off.
 - **Trends**: temperatures and pressures with a band for every run. Drag across the chart or use the slider to see the circuit at any moment, step a day back or forward, play the history (1, 2 or 5 min/s) or enlarge the charts to read every value at the cursor.
 - **Units without a high pressure sensor** (e.g. Vitocal 250-A, 252-A, 200-A, 222-S): the condensing temperature is estimated from the liquid line and the supply water and marked with ≈; the checks that depend on it are left out.
-- **log p-h diagram** with the cycle points, the source and supply temperature levels, a point table and a health check (superheat, subcooling, hot gas temperature, approaches, ΔT, lift tc − t0 against the controller's limit). Air source units are checked against outdoor air; defrost and cooling are not assessed, and the check waits for operation to settle after a defrost.
+- **log p-h diagram** with the cycle points, the source and supply temperature levels, a point table and a health check (superheat, subcooling, hot gas temperature, approaches, ΔT). Air source units are checked against outdoor air; defrost and cooling are not assessed, and the check waits for operation to settle after a defrost.
 - **Logbook** (optional): the heat pump's own event log, kept in a CSV file and shown in the card and on the timeline. Vitotronic 200 (WO1C) units (Vitocal 300-G, 333-G, older 200-S/222-S) have a real logbook. Newer units (Vitocal 250-A, 252-A, 200-A, 151-A, newer 222-S) have none; for them the script logs the status, info, service and fault messages (S.125 heating, S.128 defrost, S.115 valve to hot water …) as they appear, with the unit's own time stamps.
 - **Disabled sensors**: most refrigerant sensors of the ViCare integration are disabled by default. For an administrator the card lists the disabled ones it would use and enables them with one button.
 - No entity IDs to set up: entities are found from the ViCare integration's own sensor keys. Finnish and English, light and dark themes, phone layout.
@@ -42,7 +42,6 @@ A Home Assistant Lovelace card for Viessmann heat pumps (ground and air source) 
 type: custom:vicare-heatpump-card
 refrigerant: R410A       # R410A, R32, R290, R134a, R407C
 hours: 24                # 6, 24 or 48; the buttons change it on the fly
-max_lift: 62             # refrigerant controller limit for tc - t0 (Vitotronic 200 WO1C parameter 5080)
 ```
 
 | Option | Default | Description |
@@ -52,7 +51,6 @@ max_lift: 62             # refrigerant controller limit for tc - t0 (Vitotronic 
 | `title` | "Heat pump" | Card title |
 | `refrigerant` | `R410A` | Used for tc, t0 and the log p-h diagram; check the rating plate |
 | `hours` | `24` | Trend length |
-| `max_lift` | `62` | Lift limit (K) used by the health check |
 | `source` | `auto` | Heat source: `ground` (brine loop) or `air` (outdoor unit). `auto` picks air when there is no brine return sensor and no brine pump |
 | `heating_circuit` | `floor` | `floor` (floor heating loop) or `radiators` |
 | `buffer` | `auto` | Buffer cylinder between the heat pump and the heating circuit: `auto` (drawn if a buffer temperature sensor exists), `yes`, `no` |
