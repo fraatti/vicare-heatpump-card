@@ -58,6 +58,7 @@ hours: 24                # 6, 24 or 48; the buttons change it on the fly
 | `title` | "Heat pump" | Card title |
 | `refrigerant` | `R410A` | Used for tc, t0 and the log p-h diagram; check the rating plate |
 | `hours` | `24` | Trend length |
+| `language` | `auto` | Card language: `auto` (Home Assistant's language), `en`, `fi`, `sv`, `de` |
 | `source` | `auto` | Heat source: `ground` (brine loop) or `air` (outdoor unit). `auto` picks air when there is no brine return sensor and no brine pump |
 | `heating_circuit` | `floor` | `floor` (floor heating loop) or `radiators` |
 | `buffer` | `auto` | Buffer cylinder between the heat pump and the heating circuit: `auto` (drawn if a buffer temperature sensor exists), `yes`, `no` |

@@ -5,13 +5,14 @@ All notable changes to the ViCare Heat Pump Card. Versions follow [semantic vers
 ## 1.3.0 – 2026-11-22
 
 ### Changed
-- Air source layout: the 4-way valve caption no longer crosses the outdoor unit, and the phone layout no longer has overlapping labels.
+- Air source layout: the 4-way valve caption no longer crosses the outdoor unit, and the phone layout no longer has overlapping labels. Bottom labels are no longer clipped in the mid-width layout.
 - README screenshots show the current card (ground and air source).
 
 ### Removed
 - The `heatpump_dhw.yaml` example package (lift tc − t0 per hot water run) and its dashboard cards, as the lift was removed from the card in 1.2.0.
 
 ### Added
+- Swedish and German. The new `language` option (`auto`, `en`, `fi`, `sv`, `de`) fixes the card's language; `auto` follows Home Assistant. The logbook script takes `--lang sv` or `--lang de`.
 - Automated browser tests (`npm test`) that open the demo with every unit snapshot and operating phase, and a GitHub Actions workflow that runs them.
 
 ## 1.2.0 – 2026-11-22

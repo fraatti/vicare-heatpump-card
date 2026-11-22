@@ -4,7 +4,7 @@
  * indicative health check for Viessmann heat pumps using the built-in ViCare
  * integration. MIT License.
  */
-const VHP_VERSION = "1.2.0";
+const VHP_VERSION = "1.3.0";
 
 /* Refrigerant tables generated with CoolProp (IIR reference state).
  * sat: [T °C, p_bubble bar(a), p_dew bar(a), h_liquid kJ/kg, h_vapour kJ/kg]
@@ -179,6 +179,7 @@ const VHP_I18N = {
       floor: "Lattialämmitys",
       radiators: "Patterit",
       heater: "Sähkövastus (läpivirtaus)",
+      language: "Kieli",
       source: "Lämmönlähde",
       ground: "Maaperä (liuospiiri)",
       air: "Ulkoilma (ulkoyksikkö)",
@@ -356,6 +357,7 @@ const VHP_I18N = {
       floor: "Floor heating",
       radiators: "Radiators",
       heater: "Electric heater (flow-through)",
+      language: "Language",
       source: "Heat source",
       ground: "Ground (brine loop)",
       air: "Outdoor air (outdoor unit)",
@@ -369,6 +371,375 @@ const VHP_I18N = {
     },
   },
 };
+
+/* Swedish and German. A missing text falls back to English. */
+const VHP_I18N_SV = {
+    title: "Värmepump",
+    mode: { heating: "Värme", dhw: "Varmvatten", preparing: "Förberedelse", pause: "Paus", defrost: "Avfrostning", cooling: "Kyla", off: "Av", unknown: "Okänt", preparing_defrost: "Förbereder avfrostning", passive_defrost: "Passiv avfrostning" },
+    live: "Nu",
+    history: "Historik",
+    hot_gas: "Hetgas",
+    suction: "Suggas",
+    liquid: "Vätska",
+    compressor: "Kompressor",
+    condenser: "Kondensor",
+    evaporator: "Förångare",
+    exp_valve: "Expansionsventil",
+    supply: "Framledning",
+    return: "Retur",
+    from_ground: "Från marken",
+    to_ground: "Till marken",
+    from_source: "Från källan",
+    to_source: "Till källan",
+    heating_circuit: "Värme",
+    dhw_circuit: "Varmvatten",
+    subcooling: "Underkylning",
+    superheat: "Överhettn.",
+    outside: "Ute",
+    cop: "COP",
+    cop_heating: "värme",
+    cop_dhw: "varmvatten",
+    dhw_tank: "Beredare",
+    dhw_cylinder: "Varmvattenberedare",
+    dhw_out: "VV",
+    floor_heating: "Golvvärme",
+    radiators: "Radiatorer",
+    buffer: "Buffert",
+    buffer_tip: "Ackumulatortank. Värmepumpen laddar den från höger, värmekretsen tar sitt vatten från vänster. Skiktningen är en uppskattning utifrån tankens givare samt framlednings- och returvattnet.",
+    mixer: "Shunt",
+    heater: "Elpatron",
+    outdoor_air: "Uteluft",
+    outdoor_unit: "Utedel",
+    fan: "Fläkt",
+    fan_off: "av",
+    four_way: "4-vägsventil",
+    air_in: "Luft in",
+    brine_circuit: "Köldbärarkrets",
+    cond_tip: "Kondensor. Överst kyls den överhettade hetgasen, i mitten kondenserar den till vätska och nederst underkyls vätskan. Värmebäraren strömmar i motström, nerifrån och upp. Zonernas höjd följer hetgasens överhettning och underkylningen.",
+    evap_tip: "Förångare. Kall vätska från expansionsventilen kommer in nederst och kokar till ånga med värme från köldbäraren. Överst överhettas ångan före kompressorn. Köldbäraren strömmar i motström, uppifrån och ner. Den övre zonens höjd följer överhettningen.",
+    tank_estimate: "Beredaren har en givare upptill. Skiktningen längre ner är en uppskattning: tappning av varmvatten för in kallvatten i botten, laddning jämnar ut beredaren.",
+    show_more: "Visa mer",
+    show_less: "Visa mindre",
+    starts: "Starter",
+    pump: "Köldbärarpump",
+    temps: "Temperaturer",
+    pressures: "Tryck",
+    prev: "Föregående start",
+    next: "Nästa start",
+    to_live: "Tillbaka till nu",
+    win_prev: "Föregående period",
+    win_next: "Nästa period",
+    win_last: "senaste {h} h",
+    bigger: "Förstora diagrammen och visa värdena vid markören",
+    smaller: "Förminska diagrammen",
+    play: "Spela upp historiken snabbt",
+    pause: "Pausa uppspelningen",
+    speed: "Uppspelningshastighet (historik per sekund)",
+    loading: "Läser in historik…",
+    no_history: "Historiken kunde inte läsas in",
+    scrub: "Tidpunkt",
+    trend_refr: "köldmedium",
+    trend_water: "vatten och köldbärare",
+    trend_water_air: "vatten och luft",
+    stopped: "Kompressorn av: värdena har utjämnats och är inte driftvärden.",
+    log_fetched: "hämtad {t}",
+    logbook: "Loggbok",
+    log_short: "Logg",
+    ev: { prep: "Köldbärarpump startade", start: "Kompressor startade", stop: "Kompressor stoppade", valve: "Växelventil", valve_on: "Växelventil till varmvatten", valve_off: "Växelventil till värme", info: "Köldbärarpump stoppade", defrost: "Avfrostning", other: "Övrig händelse" },
+    ev_reason: { on_hyst: "tillslagshysteres nådd", demand: "effektbegäran", off_hyst: "frånslagshysteres nådd", temp_rise: "temperatur uppnådd", circuit_change: "byte av hydraulisk krets", heating: "värme", dhw: "varmvatten" },
+    ev_legend: { start: "start", stop: "stopp", prep: "köldbärarpump", prerun: "förkörning", valve: "ventil", defrost: "avfrostning", info: "status", other: "övrigt" },
+    log_error: "Senaste hämtningen av loggboken misslyckades: {msg}",
+    log_none: "Inga händelser under vald period.",
+    log_total: "{n} poster sparade",
+    ph_button: "log p-h",
+    ph_title: "Köldmediecykel, log p-h",
+    assessment: "Bedömning",
+    not_running: "Kompressorn går inte. Diagrammet och bedömningen gäller den senaste stabila körningen.",
+    last_run: "Senaste körning",
+    no_run: "Kompressorn går inte, och ingen körning på minst {s} minuter hittades i historiken.",
+    settling: "Kompressorn startade för {m} min sedan. Bedömningen görs när driften har stabiliserats ({s} min).",
+    no_ph: "Hög- eller lågtryck saknas, så diagrammet kan inte ritas.",
+    disclaimer_air: "Riktvärden för en luft/vatten-värmepump. ViCare uppdaterar värdena vid olika tidpunkter, så ett enskilt värde kan vara några minuter gammalt. Ersätter inte service.",
+    est_high: "Högtrycket mäts inte. Kondenseringstemperaturen (≈) är uppskattad från vätskeledningen och framledningsvattnet, så kontrollerna som beror på den utelämnas.",
+    reversed_note: "Cykeln är omkastad ({mode}): utedelens lamellbatteri kondenserar och värmeväxlaren inomhus förångar. Bedömningen görs endast för värme och varmvatten.",
+    after_defrost: "Avfrostningen slutade för {m} min sedan. Bedömningen görs när driften har stabiliserats igen ({s} min).",
+    ph_source: "Källa",
+    ph_sink: "Framledning",
+    disclaimer: "Riktvärden för en bergvärmepump. ViCare uppdaterar värdena vid olika tidpunkter, så ett enskilt värde kan vara några minuter gammalt. Ersätter inte service.",
+    all_ok: "Alla bedömda värden ligger inom riktområdet.",
+    point: "Punkt",
+    pressure: "Tryck",
+    temperature: "Temperatur",
+    enthalpy: "Entalpi",
+    p1: "Suggas (till kompressorn)",
+    p2: "Hetgas",
+    p3: "Vätskeledning",
+    p4: "Efter expansion",
+    chk: {
+      superheat: "Överhettning",
+      subcooling: "Underkylning",
+      discharge: "Hetgastemperatur",
+      discharge_sh: "Hetgasöverhettning",
+      evap_approach: "Förångarens temperaturdifferens",
+      air_approach: "Uteluft − förångning",
+      cond_approach: "Kondensorns temperaturdifferens",
+      brine_dt: "Köldbärare ΔT",
+      water_dt: "Värmebärare ΔT",
+      ratio: "Tryckförhållande",
+      carnot: "Carnot-COP",
+      expected: "Förväntad COP",
+      cop_season: "ViCare-COP",
+    },
+    msg: {
+      superheat_low: "Mycket låg överhettning: vätska kan nå kompressorn.",
+      superheat_high: "Hög överhettning: för lite köldmedium eller strypande expansionsventil.",
+      subcooling_low: "Låg underkylning: köldmediefyllningen kan vara för liten.",
+      subcooling_high: "Hög underkylning: överfyllning eller strypning i vätskeledningen.",
+      discharge_high: "Hög hetgastemperatur belastar kompressorn.",
+      discharge_sh_low: "Låg hetgasöverhettning: möjlig våt kompression.",
+      air_approach_high: "Stor skillnad mellan uteluft och förångning: lamellbatteriet kan vara isbelagt eller smutsigt, eller luftflödet är lågt (fläkt, snö, löv).",
+      evap_approach_high: "Stor skillnad mellan köldbärare och förångning: lågt köldbärarflöde eller smutsig förångare.",
+      cond_approach_high: "Stor skillnad mellan kondensering och framledning: lågt flöde i värmekretsen eller smutsig kondensor.",
+      brine_dt_high: "Hög ΔT på köldbäraren: flödet kan vara lågt (luft, filter, pump).",
+      brine_dt_low: "Låg ΔT på köldbäraren: kontrollera givare och flöde.",
+      water_dt_high: "Hög ΔT på värmebäraren: flödet i värmekretsen kan vara lågt.",
+      water_dt_low: "Låg ΔT på värmebäraren.",
+      carnot_info: "Teoretiskt maximum utifrån kondenserings- och förångningstemperaturen.",
+      expected_info: "En bra värmepump når typiskt 45–55 % av Carnot-COP.",
+      cop_season_info: "COP som ViCare rapporterar är ett långtidsvärde, inte ett momentanvärde.",
+    },
+    roles: { hot_gas_t: "hetgastemperatur", hot_gas_p: "hetgastryck", suction_t: "suggastemperatur", suction_p: "suggastryck", liquid_t: "vätskeledningens temperatur", pri_supply: "köldbärare in", sec_supply: "framledning värmebärare", compressor: "kompressor", phase: "kompressorfas", dhw_charging: "varmvattenladdning" },
+    missing: "Givare saknas: {list}. Om de är dolda, aktivera dem på enhetssidan (+ entiteter som inte visas).",
+    missing_absent: "Enheten har inga givare för: {list}.",
+    disabled: "Inaktiverade givare som kortet skulle använda: {list}.",
+    enable: "Aktivera",
+    device_page: "Enhetssida",
+    enabling: "Aktiverar…",
+    enabled_wait: "Aktiverad. Home Assistant läser in ViCare-integrationen på nytt om cirka {s} sekunder; därefter visas värdena.",
+    enable_failed: "Aktiveringen misslyckades: {msg}",
+    no_device: "Ingen ViCare-värmepump hittades. Välj enheten i kortets inställningar.",
+    cfg: {
+      device_id: "ViCare-enhet",
+      extra_devices: "Övriga enheter (utedel i ett splitsystem)",
+      title: "Rubrik",
+      refrigerant: "Köldmedium",
+      hours: "Historikens längd",
+      show_trend: "Visa trender och tidsreglage",
+      show_info: "Visa inforad",
+      show_logbook: "Visa loggbok",
+      logbook_entity: "Loggbokssensor (valfri)",
+      steady_minutes: "Stabiliseringstid för bedömningen",
+      pressure_type: "Trycktyp",
+      absolute: "Absoluttryck (bar a)",
+      gauge: "Övertryck (bar g)",
+      buffer: "Ackumulatortank",
+      mixer: "Shuntventil i värmekretsen",
+      heating_circuit: "Värmedistribution",
+      floor: "Golvvärme",
+      radiators: "Radiatorer",
+      heater: "Elpatron (genomströmning)",
+      language: "Språk",
+      source: "Värmekälla",
+      ground: "Mark (köldbärarkrets)",
+      air: "Uteluft (utedel)",
+      auto: "Automatisk",
+      yes: "Ja",
+      no: "Nej",
+      log_markers: "Loggboksmarkeringar på tidslinjen",
+      cold_water: "Kallvattentemperatur",
+      entities: "Givare (tomt = automatiskt)",
+      r_hot_gas_t: "Hetgastemperatur", r_hot_gas_p: "Hetgastryck", r_suction_t: "Suggastemperatur", r_suction_p: "Suggastryck", r_liquid_t: "Vätskeledningens temperatur", r_subcooling: "Underkylning", r_superheat: "Överhettning", r_compressor: "Kompressor (till/från)", r_comp_speed: "Kompressorvarvtal (% eller rps)", r_eev: "Expansionsventilens öppning %", r_phase: "Kompressorfas", r_starts: "Kompressorstarter", r_sec_supply: "Framledning (värmepump)", r_sec_return: "Retur (värmepump)", r_circ_pump: "Cirkulationspump", r_circ_pump_speed: "Cirkulationspumpens varvtal %", r_dhw_charging: "Varmvattenladdning (växelventil)", r_dhw_top: "Varmvattenberedarens temperatur", r_dhw_circ: "VVC-pump", r_buffer_t: "Ackumulatortankens temperatur", r_circ_supply: "Värmekretsens framledning", r_mixer: "Shuntens öppning %", r_heater: "Elpatron (till eller effekt)", r_pri_supply: "Köldbärare från marken / luft in", r_pri_return: "Köldbärare till marken", r_pri_pump: "Köldbärarpumpens varvtal %", r_fan: "Fläktvarvtal %", r_outside: "Utetemperatur", r_cop_heating: "COP värme", r_cop_dhw: "COP varmvatten", r_cop_total: "COP totalt",
+    },
+};
+const VHP_I18N_DE = {
+    title: "Wärmepumpe",
+    mode: { heating: "Heizen", dhw: "Warmwasser", preparing: "Vorlaufphase", pause: "Pause", defrost: "Abtauen", cooling: "Kühlen", off: "Aus", unknown: "Unbekannt", preparing_defrost: "Abtauvorbereitung", passive_defrost: "Passive Abtauung" },
+    live: "Jetzt",
+    history: "Verlauf",
+    hot_gas: "Heißgas",
+    suction: "Sauggas",
+    liquid: "Flüssiggas",
+    compressor: "Verdichter",
+    condenser: "Verflüssiger",
+    evaporator: "Verdampfer",
+    exp_valve: "Expansionsventil",
+    supply: "Vorlauf",
+    return: "Rücklauf",
+    from_ground: "Vom Erdreich",
+    to_ground: "Zum Erdreich",
+    from_source: "Von Quelle",
+    to_source: "Zur Quelle",
+    heating_circuit: "Heizkreis",
+    dhw_circuit: "Warmwasser",
+    subcooling: "Unterkühlung",
+    superheat: "Überhitzung",
+    outside: "Außen",
+    cop: "COP",
+    cop_heating: "Heizen",
+    cop_dhw: "Warmwasser",
+    dhw_tank: "Speicher",
+    dhw_cylinder: "Warmwasserspeicher",
+    dhw_out: "WW",
+    floor_heating: "Fußbodenheizung",
+    radiators: "Heizkörper",
+    buffer: "Puffer",
+    buffer_tip: "Pufferspeicher. Die Wärmepumpe lädt ihn von rechts, der Heizkreis entnimmt sein Wasser links. Die Schichtung ist aus dem Puffersensor sowie Vorlauf- und Rücklaufwasser geschätzt.",
+    mixer: "Mischer",
+    heater: "Heizstab",
+    outdoor_air: "Außenluft",
+    outdoor_unit: "Außeneinheit",
+    fan: "Ventilator",
+    fan_off: "aus",
+    four_way: "4-Wege-Ventil",
+    air_in: "Lufteintritt",
+    brine_circuit: "Solekreis",
+    cond_tip: "Verflüssiger. Oben kühlt das überhitzte Heißgas ab, in der Mitte kondensiert es zu Flüssigkeit und unten wird die Flüssigkeit unterkühlt. Das Heizwasser strömt im Gegenstrom von unten nach oben. Die Zonenhöhen folgen der Heißgasüberhitzung und der Unterkühlung.",
+    evap_tip: "Verdampfer. Kalte Flüssigkeit vom Expansionsventil tritt unten ein und verdampft mit der Wärme der Sole. Oben wird der Dampf vor dem Verdichter überhitzt. Die Sole strömt im Gegenstrom von oben nach unten. Die Höhe der oberen Zone folgt der Überhitzung.",
+    tank_estimate: "Der Speicher hat einen Sensor oben. Die Schichtung darunter ist geschätzt: Warmwasserzapfung bringt kaltes Wasser nach unten, die Speicherladung gleicht den Speicher aus.",
+    show_more: "Mehr anzeigen",
+    show_less: "Weniger anzeigen",
+    starts: "Starts",
+    pump: "Solepumpe",
+    temps: "Temperaturen",
+    pressures: "Drücke",
+    prev: "Vorheriger Start",
+    next: "Nächster Start",
+    to_live: "Zurück zu jetzt",
+    win_prev: "Vorheriger Zeitraum",
+    win_next: "Nächster Zeitraum",
+    win_last: "letzte {h} h",
+    bigger: "Diagramme vergrößern und Werte am Cursor anzeigen",
+    smaller: "Diagramme verkleinern",
+    play: "Verlauf im Zeitraffer abspielen",
+    pause: "Wiedergabe anhalten",
+    speed: "Wiedergabegeschwindigkeit (Verlauf pro Sekunde)",
+    loading: "Verlauf wird geladen…",
+    no_history: "Verlauf konnte nicht geladen werden",
+    scrub: "Zeitpunkt",
+    trend_refr: "Kältemittel",
+    trend_water: "Wasser und Sole",
+    trend_water_air: "Wasser und Luft",
+    stopped: "Verdichter aus: Die Werte haben sich angeglichen und sind keine Betriebswerte.",
+    log_fetched: "abgerufen {t}",
+    logbook: "Logbuch",
+    log_short: "Log",
+    ev: { prep: "Solepumpe ein", start: "Verdichter ein", stop: "Verdichter aus", valve: "Umschaltventil", valve_on: "Umschaltventil auf Warmwasser", valve_off: "Umschaltventil auf Heizen", info: "Solepumpe aus", defrost: "Abtauung", other: "Sonstiges Ereignis" },
+    ev_reason: { on_hyst: "Einschalthysterese erreicht", demand: "Leistungsanforderung", off_hyst: "Ausschalthysterese erreicht", temp_rise: "Temperatur erreicht", circuit_change: "Wechsel Hydraulikkreis", heating: "Heizen", dhw: "Warmwasser" },
+    ev_legend: { start: "Start", stop: "Stopp", prep: "Solepumpe", prerun: "Vorlaufphase", valve: "Ventil", defrost: "Abtauung", info: "Status", other: "Sonstiges" },
+    log_error: "Letzter Logbuchabruf fehlgeschlagen: {msg}",
+    log_none: "Keine Ereignisse im gewählten Zeitraum.",
+    log_total: "{n} Einträge gespeichert",
+    ph_button: "log p-h",
+    ph_title: "Kältekreisprozess, log p-h",
+    assessment: "Bewertung",
+    not_running: "Der Verdichter läuft nicht. Diagramm und Bewertung stammen vom letzten eingeschwungenen Lauf.",
+    last_run: "Letzter Lauf",
+    no_run: "Der Verdichter läuft nicht, und im Verlauf wurde kein Lauf von mindestens {s} Minuten gefunden.",
+    settling: "Der Verdichter ist vor {m} min gestartet. Die Bewertung erfolgt, sobald der Betrieb eingeschwungen ist ({s} min).",
+    no_ph: "Hoch- oder Niederdruck fehlt, daher kann das Diagramm nicht gezeichnet werden.",
+    disclaimer_air: "Richtwerte für eine Luft/Wasser-Wärmepumpe. ViCare aktualisiert die Werte zu unterschiedlichen Zeitpunkten, ein einzelner Wert kann daher einige Minuten alt sein. Kein Ersatz für eine Wartung.",
+    est_high: "Der Hochdruck wird nicht gemessen. Die Kondensationstemperatur (≈) ist aus Flüssiggas- und Vorlauftemperatur geschätzt, daher entfallen die davon abhängigen Prüfungen.",
+    reversed_note: "Der Kreisprozess ist umgekehrt ({mode}): Der Lamellenwärmetauscher der Außeneinheit verflüssigt, der Wärmetauscher innen verdampft. Bewertet werden nur Heizen und Warmwasser.",
+    after_defrost: "Abtauung vor {m} min beendet. Die Bewertung erfolgt, sobald der Betrieb wieder eingeschwungen ist ({s} min).",
+    ph_source: "Quelle",
+    ph_sink: "Vorlauf",
+    disclaimer: "Richtwerte für eine Sole/Wasser-Wärmepumpe. ViCare aktualisiert die Werte zu unterschiedlichen Zeitpunkten, ein einzelner Wert kann daher einige Minuten alt sein. Kein Ersatz für eine Wartung.",
+    all_ok: "Alle bewerteten Werte liegen im Richtbereich.",
+    point: "Punkt",
+    pressure: "Druck",
+    temperature: "Temperatur",
+    enthalpy: "Enthalpie",
+    p1: "Sauggas (zum Verdichter)",
+    p2: "Heißgas",
+    p3: "Flüssigkeitsleitung",
+    p4: "Nach Expansion",
+    chk: {
+      superheat: "Überhitzung",
+      subcooling: "Unterkühlung",
+      discharge: "Heißgastemperatur",
+      discharge_sh: "Heißgasüberhitzung",
+      evap_approach: "Grädigkeit Verdampfer",
+      air_approach: "Außenluft − Verdampfung",
+      cond_approach: "Grädigkeit Verflüssiger",
+      brine_dt: "Sole-ΔT",
+      water_dt: "Heizwasser-ΔT",
+      ratio: "Druckverhältnis",
+      carnot: "Carnot-COP",
+      expected: "Erwarteter COP",
+      cop_season: "ViCare-COP",
+    },
+    msg: {
+      superheat_low: "Sehr geringe Überhitzung: Flüssigkeit kann in den Verdichter gelangen.",
+      superheat_high: "Hohe Überhitzung: zu wenig Kältemittel oder drosselndes Expansionsventil.",
+      subcooling_low: "Geringe Unterkühlung: Kältemittelfüllung möglicherweise zu gering.",
+      subcooling_high: "Hohe Unterkühlung: Überfüllung oder Verengung in der Flüssigkeitsleitung.",
+      discharge_high: "Hohe Heißgastemperatur belastet den Verdichter.",
+      discharge_sh_low: "Geringe Heißgasüberhitzung: mögliche Nassverdichtung.",
+      air_approach_high: "Große Differenz zwischen Außenluft und Verdampfung: Lamellenwärmetauscher vereist oder verschmutzt oder zu geringer Luftstrom (Ventilator, Schnee, Laub).",
+      evap_approach_high: "Große Differenz zwischen Sole und Verdampfung: geringer Soledurchfluss oder verschmutzter Verdampfer.",
+      cond_approach_high: "Große Differenz zwischen Kondensation und Vorlauf: geringer Heizwasserdurchfluss oder verschmutzter Verflüssiger.",
+      brine_dt_high: "Hohes Sole-ΔT: Durchfluss möglicherweise zu gering (Luft, Filter, Pumpe).",
+      brine_dt_low: "Geringes Sole-ΔT: Sensoren und Durchfluss prüfen.",
+      water_dt_high: "Hohes Heizwasser-ΔT: Heizwasserdurchfluss möglicherweise zu gering.",
+      water_dt_low: "Geringes Heizwasser-ΔT.",
+      carnot_info: "Theoretisches Maximum aus Kondensations- und Verdampfungstemperatur.",
+      expected_info: "Eine gute Wärmepumpe erreicht typischerweise 45–55 % des Carnot-COP.",
+      cop_season_info: "Der von ViCare gemeldete COP ist ein Langzeitwert, kein Momentanwert.",
+    },
+    roles: { hot_gas_t: "Heißgastemperatur", hot_gas_p: "Heißgasdruck", suction_t: "Sauggastemperatur", suction_p: "Sauggasdruck", liquid_t: "Flüssiggastemperatur", pri_supply: "Primärkreis Vorlauf", sec_supply: "Sekundärkreis Vorlauf", compressor: "Verdichter", phase: "Verdichterphase", dhw_charging: "Warmwasserbereitung" },
+    missing: "Fehlende Sensoren: {list}. Falls sie ausgeblendet sind, auf der Geräteseite aktivieren (+ nicht angezeigte Entitäten).",
+    missing_absent: "Das Gerät hat keine Sensoren für: {list}.",
+    disabled: "Deaktivierte Sensoren, die die Karte nutzen würde: {list}.",
+    enable: "Aktivieren",
+    device_page: "Geräteseite",
+    enabling: "Wird aktiviert…",
+    enabled_wait: "Aktiviert. Home Assistant lädt die ViCare-Integration in etwa {s} Sekunden neu, danach erscheinen die Werte.",
+    enable_failed: "Aktivierung fehlgeschlagen: {msg}",
+    no_device: "Keine ViCare-Wärmepumpe gefunden. Gerät in den Karteneinstellungen auswählen.",
+    cfg: {
+      device_id: "ViCare-Gerät",
+      extra_devices: "Weitere Geräte (Außeneinheit einer Split-Anlage)",
+      title: "Titel",
+      refrigerant: "Kältemittel",
+      hours: "Verlaufsdauer",
+      show_trend: "Trends und Zeitleiste anzeigen",
+      show_info: "Infozeile anzeigen",
+      show_logbook: "Logbuch anzeigen",
+      logbook_entity: "Logbuch-Sensor (optional)",
+      steady_minutes: "Einschwingzeit für die Bewertung",
+      pressure_type: "Druckangabe",
+      absolute: "Absolut (bar a)",
+      gauge: "Überdruck (bar g)",
+      buffer: "Pufferspeicher",
+      mixer: "Mischer im Heizkreis",
+      heating_circuit: "Wärmeverteilung",
+      floor: "Fußbodenheizung",
+      radiators: "Heizkörper",
+      heater: "Heizwasser-Durchlauferhitzer",
+      language: "Sprache",
+      source: "Wärmequelle",
+      ground: "Erdreich (Solekreis)",
+      air: "Außenluft (Außeneinheit)",
+      auto: "Automatisch",
+      yes: "Ja",
+      no: "Nein",
+      log_markers: "Logbuch-Markierungen auf der Zeitleiste",
+      cold_water: "Kaltwassertemperatur",
+      entities: "Sensoren (leer = automatisch)",
+      r_hot_gas_t: "Heißgastemperatur", r_hot_gas_p: "Heißgasdruck", r_suction_t: "Sauggastemperatur", r_suction_p: "Sauggasdruck", r_liquid_t: "Flüssiggastemperatur", r_subcooling: "Unterkühlung", r_superheat: "Überhitzung", r_compressor: "Verdichter (ein/aus)", r_comp_speed: "Verdichterdrehzahl (% oder rps)", r_eev: "Öffnung Expansionsventil %", r_phase: "Verdichterphase", r_starts: "Verdichterstarts", r_sec_supply: "Vorlauf (Wärmepumpe)", r_sec_return: "Rücklauf (Wärmepumpe)", r_circ_pump: "Sekundärpumpe", r_circ_pump_speed: "Drehzahl Sekundärpumpe %", r_dhw_charging: "Warmwasserbereitung (Umschaltventil)", r_dhw_top: "Warmwasserspeichertemperatur", r_dhw_circ: "Zirkulationspumpe", r_buffer_t: "Pufferspeichertemperatur", r_circ_supply: "Heizkreis Vorlauf", r_mixer: "Mischeröffnung %", r_heater: "Heizwasser-Durchlauferhitzer (ein oder Leistung)", r_pri_supply: "Sole vom Erdreich / Lufteintritt", r_pri_return: "Sole zum Erdreich", r_pri_pump: "Drehzahl Solepumpe %", r_fan: "Ventilatordrehzahl %", r_outside: "Außentemperatur", r_cop_heating: "COP Heizen", r_cop_dhw: "COP Warmwasser", r_cop_total: "COP gesamt",
+    },
+};
+
+function vhpMerge(base, over) {
+  const out = {};
+  for (const k of Object.keys(base)) {
+    const b = base[k], o = over?.[k];
+    out[k] = b && typeof b === "object" && !Array.isArray(b) ? vhpMerge(b, o) : o ?? b;
+  }
+  return out;
+}
+VHP_I18N.sv = vhpMerge(VHP_I18N.en, VHP_I18N_SV);
+VHP_I18N.de = vhpMerge(VHP_I18N.en, VHP_I18N_DE);
 
 /* Roles -> candidate translation keys of the ViCare integration, in priority order. */
 const VHP_ROLES = {
@@ -436,7 +807,7 @@ const VHP_GEOM = {
   mid: { w_heat: "M70 92 V10 H-166", w_fret: "M-168 248 H0 V224", w_dhw: "M62 100 H-40", ret_x1: 0,
     brine: "M650 220 H815 A15 15 0 0 0 815 190 H714 A14 14 0 0 1 700 176 V114 A14 14 0 0 0 686 100 H652", t_dhw: [56, 92, "end"], arrow: true },
   narrow: { w_heat: "M70 92 V14 H6", w_fret: "", w_dhw: "M62 100 H6", ret_x1: 6,
-    brine: "M650 220 H666 A12 12 0 0 0 678 208 V112 A12 12 0 0 0 666 100 H652", t_dhw: [10, 122, "start"], arrow: true },
+    brine: "M650 220 H666 A12 12 0 0 0 678 208 V112 A12 12 0 0 0 666 100 H652", t_dhw: [10, 147, "start"], arrow: true },
 };
 /* Cylinder colours: cold mains water is blue, charged hot water red. */
 const VHP_TANK_SCALE = [[8, 70, 130, 220], [18, 120, 180, 235], [28, 240, 200, 130], [38, 240, 150, 70], [48, 226, 90, 48], [58, 196, 40, 40]];
@@ -618,6 +989,7 @@ class VicareHeatpumpCard extends HTMLElement {
           type: "grid",
           name: "",
           schema: [
+            { name: "language", selector: { select: { mode: "dropdown", options: [["auto", vhpCfgText("auto")], ["en", "English"], ["fi", "Suomi"], ["sv", "Svenska"], ["de", "Deutsch"]].map(([value, label]) => ({ value, label })) } } },
             { name: "source", selector: { select: { mode: "dropdown", options: ["auto", "ground", "air"].map((v) => ({ value: v, label: vhpCfgText(v) })) } } },
             { name: "buffer", selector: { select: { mode: "dropdown", options: ["auto", "yes", "no"].map((v) => ({ value: v, label: vhpCfgText(v) })) } } },
             { name: "heating_circuit", selector: { select: { mode: "dropdown", options: ["floor", "radiators"].map((v) => ({ value: v, label: vhpCfgText(v) })) } } },
@@ -695,6 +1067,7 @@ class VicareHeatpumpCard extends HTMLElement {
       show_info: true,
       show_logbook: true,
       log_markers: true,
+      language: "auto",
       source: "auto",
       buffer: "auto",
       mixer: false,
@@ -771,7 +1144,9 @@ class VicareHeatpumpCard extends HTMLElement {
 
   /* -------------------------------------------------- language helpers */
   get _lang() {
-    const l = (this._hass?.locale?.language || this._hass?.language || "en").slice(0, 2);
+    // the card's own setting first, then the user's Home Assistant language
+    const set = this._config?.language;
+    const l = set && set !== "auto" ? set : (this._hass?.locale?.language || this._hass?.language || "en").slice(0, 2);
     return VHP_I18N[l] ? l : "en";
   }
   get _i() {
@@ -1292,6 +1667,15 @@ class VicareHeatpumpCard extends HTMLElement {
         dg.style.setProperty("--k", k.toFixed(3));
         dg.classList.toggle("narrow", view === "narrow" && k > 1.25);
         dg.classList.toggle("tight", k > 1.2);
+        // air source: labels next to the outdoor unit move aside (snug) or hide (crowded) as the text grows
+        dg.classList.toggle("snug", k > 1.1);
+        dg.classList.toggle("crowded", k > 1.36);
+        if (svg) {
+          // the value pills on the bottom row grow with the text: make room so they are not clipped
+          const vb = this._vb(view).split(" ");
+          vb[3] = Math.max(+vb[3], Math.ceil(240.5 + 21.8 * k));
+          if (svg.getAttribute("viewBox") !== vb.join(" ")) svg.setAttribute("viewBox", vb.join(" "));
+        }
       }
       const w = Math.round(this.shadowRoot.getElementById("charts").clientWidth || entries[0].contentRect.width);
       if (w > 0 && Math.abs(w - this._width) > 2) {
@@ -1459,6 +1843,12 @@ class VicareHeatpumpCard extends HTMLElement {
     t.setAttribute("x", g.t_dhw[0]);
     t.setAttribute("y", g.t_dhw[1]);
     t.setAttribute("text-anchor", g.t_dhw[2]);
+    // on a phone the outdoor unit box starts lower and further right to leave room for the suction labels
+    const odu = svg.querySelector("rect.odu");
+    if (odu) {
+      const [x, y, w, h] = view === "narrow" ? [468, 70, 246, 190] : [456, 44, 258, 216];
+      Object.entries({ x, y, width: w, height: h }).forEach(([a, v]) => odu.setAttribute(a, v));
+    }
   }
 
   _bindScrub(el) {
@@ -1668,7 +2058,7 @@ class VicareHeatpumpCard extends HTMLElement {
       <g class="fv" data-role="phase"><title>${i.four_way}</title>
         <polygon class="fvl" points="340,100 328,93 328,107"/><polygon class="fvr" points="340,100 352,93 352,107"/>
         <polygon class="fvt" points="340,100 333,88 347,88"/><polygon class="fvb" points="340,100 333,112 347,112"/></g>
-      <text x="392" y="86" class="cap" id="t_fv">${i.four_way}</text>` : ""}
+      <text x="325" y="94" text-anchor="end" class="cap" id="t_fv">${i.four_way}</text>` : ""}
       <!-- compressor -->
       <g class="comp" id="comp" data-role="compressor"${air ? ' transform="translate(0 68)"' : ""}>
         <circle cx="340" cy="100" r="20" class="compc"/>
@@ -1763,7 +2153,7 @@ class VicareHeatpumpCard extends HTMLElement {
       <text x="164" y="168" text-anchor="end" class="mid cyc" id="v_tc">tc –</text>
       <text x="${air ? 528 : 516}" y="168" class="mid cyc" id="v_t0">t0 –</text>
       <g class="val" data-role="subcooling"><text x="${air ? 258 : 278}" y="${air ? 128 : 174}" text-anchor="middle" class="cap">${i.subcooling}</text><text x="${air ? 258 : 278}" y="${air ? 128 : 174}" dy="1.3em" text-anchor="middle" class="num" id="v_sc">–</text></g>
-      <g class="val" data-role="superheat"><text x="${air ? 396 : 424}" y="126" text-anchor="${air ? "start" : "middle"}" class="cap">${i.superheat}</text><text x="${air ? 396 : 424}" y="126" dy="1.3em" text-anchor="${air ? "start" : "middle"}" class="num" id="v_sh">–</text></g>
+      <g class="val" data-role="superheat"><text x="${air ? 392 : 424}" y="126" text-anchor="${air ? "start" : "middle"}" class="cap">${i.superheat}</text><text x="${air ? 392 : 424}" y="126" dy="1.3em" text-anchor="${air ? "start" : "middle"}" class="num" id="v_sh">–</text></g>
       <!-- sensor markers on the pipes -->
       <g class="sm" data-role="hot_gas_t"><circle cx="${air ? 340 : 258}" cy="${air ? 134 : 100}" r="4.5" class="smc hot"/></g>
       <g class="sm" data-role="suction_t"><circle cx="${air ? 384 : 424}" cy="${air ? 120 : 100}" r="4.5" class="smc cold"/></g>
@@ -2529,6 +2919,25 @@ ha-card { padding: 14px 16px 12px; overflow: hidden; container-type: inline-size
 .diagram.narrow .val[data-role="sec_supply"] { transform: translate(4px, -12px); }
 .diagram.narrow .val[data-role="sec_supply"] .cap { display: none; }
 .diagram.narrow #t_heat { transform: translateY(-6px); }
+svg.v-narrow #v_tc { transform: translateY(8px); }
+.diagram.narrow #v_heater { display: none; }
+.diagram.narrow svg.ground .val[data-role="pri_supply"] { transform: translateY(-4px); }
+/* air source with large text: keep the labels clear of the outdoor unit box. Superheat moves under the
+   expansion valve (its caption gives way), the suction labels shift left and the pills inside the box drop. */
+.diagram.snug svg.air .val[data-role="superheat"] { transform: translate(18px, 112px); }
+.diagram.snug svg.air .val[data-role="superheat"] text { text-anchor: middle; }
+.diagram.snug svg.air .evcap, .diagram.crowded svg.air #t_fv { display: none; }
+.diagram.snug svg.air #hxcap_e { transform: translateX(6px); }
+.diagram.snug svg.air .val:is([data-role="suction_t"], [data-role="suction_p"]) { transform: translateX(-6px); }
+/* pressures in a smaller size (same baseline) so a wide value such as "13,0 bar" clears the suction loop */
+.diagram.snug svg.air .num.sub { font-size: calc(12px * var(--k, 1)); transform: translateY(calc(5.1px * var(--k, 1))); }
+.diagram.snug svg.air :is(.airin, .val[data-role="outside"]) { transform: translateY(7px); }
+/* phone: the outdoor unit box is smaller (set in _applyView), outdoor air sits above it, the fan moves right */
+.diagram svg.air.v-narrow :is(.hxcap, .airin) { display: none; }
+.diagram svg.air.v-narrow .val[data-role="outside"] { transform: translateY(-30px); }
+.diagram svg.air.v-narrow .val:is([data-role="suction_t"], [data-role="suction_p"]) { transform: none; }
+.diagram svg.air.v-narrow #fan { transform: translateX(24px); }
+.diagram svg.air.v-narrow #v_fan { text-anchor: end; transform: translate(28px, 36px); }
 .cap { font-size: calc(12px * var(--k, 1)); fill: var(--secondary-text-color); }
 .num { font-size: calc(14px * var(--k, 1)); font-weight: 500; fill: var(--primary-text-color); }
 .num.sub { font-weight: 400; }
