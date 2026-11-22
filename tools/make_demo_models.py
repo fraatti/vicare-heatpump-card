@@ -27,15 +27,19 @@ MAP = [
     ("heating.evaporators.0.sensors.temperature.overheat", "sensor", "evaporator_overheat_temperature", "value", "K"),
     ("heating.primaryCircuit.sensors.temperature.supply", "sensor", "primary_circuit_supply_temperature", "value", "°C"),
     ("heating.primaryCircuit.sensors.temperature.return", "sensor", "primary_circuit_return_temperature", "value", "°C"),
+    ("heating.primaryCircuit.sensors.rotation", "sensor", "primary_circuit_pump_rotation", "value", "%"),
     ("heating.secondaryCircuit.sensors.temperature.supply", "sensor", "secondary_circuit_supply_temperature", "value", "°C"),
     ("heating.secondaryCircuit.sensors.temperature.return", "sensor", "secondary_circuit_return_temperature", "value", "°C"),
     ("heating.sensors.temperature.return", "sensor", "return_temperature", "value", "°C"),
     ("heating.circuits.0.sensors.temperature.supply", "sensor", "supply_temperature", "value", "°C"),
+    # a unit whose only heating circuit is number 1 (e.g. Vitocal 300-G): Home Assistant names it like circuit 0
+    ("heating.circuits.1.sensors.temperature.supply", "sensor", "supply_temperature", "value", "°C"),
     ("heating.sensors.temperature.outside", "sensor", "outside_temperature", "value", "°C"),
     ("heating.dhw.sensors.temperature.hotWaterStorage", "sensor", "dhw_storage_temperature", "value", "°C"),
     ("heating.dhw.sensors.temperature.hotWaterStorage.top", "sensor", "dhw_storage_top_temperature", "value", "°C"),
     ("heating.bufferCylinder.sensors.temperature.main", "sensor", "buffer_main_temperature", "value", "°C"),
     ("heating.circuits.0.circulation.pump", "binary_sensor", "circulation_pump", "status", None),
+    ("heating.circuits.1.circulation.pump", "binary_sensor", "circulation_pump", "status", None),
     ("heating.dhw.charging", "binary_sensor", "domestic_hot_water_charging", "active", None),
     ("heating.dhw.pumps.circulation", "binary_sensor", "domestic_hot_water_circulation_pump", "status", None),
 ]
@@ -93,6 +97,7 @@ MODELS = {
     "vitocal222s": ("Vitocal 222-S", "R32", "air", [("Vitocal 222-S", ["Vitocal222S.json"])]),
     "vitocal200a": ("Vitocal 200-A (two ViCare devices)", "R290", "air",
                     [("Vitocal 200-A system controller", ["Vitocal200A_SystemController.json"]), ("Vitocal 200-A outdoor unit", ["Vitocal200A_OutdoorUnit.json"])]),
+    "vitocal300g": ("Vitocal 300-G", "R410A", "ground", [("Vitocal 300-G", ["Vitocal300G_CU401B.json"])]),
     "vitocal333g": ("Vitocal 333-G", "R410A", "ground", [("Vitocal 333-G", ["Vitocal333G-with-Vitovent300F.json"])]),
 }
 allm = {}

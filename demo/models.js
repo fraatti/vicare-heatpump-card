@@ -393,6 +393,124 @@ window.VHP_MODELS = {
    ]
   }
  },
+ "vitocal300g": {
+  "title": "Vitocal 300-G",
+  "refrigerant": "R410A",
+  "source": "ground",
+  "data": "PyViCare tests/response (Vitocal300G_CU401B.json), Apache-2.0",
+  "devices": [
+   {
+    "name": "Vitocal 300-G",
+    "entities": {
+     "sensor:compressor_phase": [
+      "heating",
+      null
+     ],
+     "binary_sensor:compressor": [
+      "on",
+      null
+     ],
+     "sensor:compressor_starts": [
+      363,
+      null
+     ],
+     "sensor:compressor_outlet_temperature": [
+      79.5,
+      "°C"
+     ],
+     "sensor:compressor_inlet_temperature": [
+      7.1,
+      "°C"
+     ],
+     "sensor:compressor_inlet_pressure": [
+      8.7,
+      "bar"
+     ],
+     "sensor:compressor_modulation": [
+      100,
+      "%"
+     ],
+     "sensor:hot_gas_temperature": [
+      79.5,
+      "°C"
+     ],
+     "sensor:hot_gas_pressure": [
+      28.1,
+      "bar"
+     ],
+     "sensor:suction_gas_temperature": [
+      7.1,
+      "°C"
+     ],
+     "sensor:suction_gas_pressure": [
+      8.7,
+      "bar"
+     ],
+     "sensor:liquid_gas_temperature": [
+      36,
+      "°C"
+     ],
+     "sensor:evaporator_liquid_temperature": [
+      36,
+      "°C"
+     ],
+     "sensor:primary_circuit_supply_temperature": [
+      8.7,
+      "°C"
+     ],
+     "sensor:primary_circuit_return_temperature": [
+      4.9,
+      "°C"
+     ],
+     "sensor:primary_circuit_pump_rotation": [
+      80,
+      "%"
+     ],
+     "sensor:secondary_circuit_supply_temperature": [
+      44,
+      "°C"
+     ],
+     "sensor:return_temperature": [
+      35.8,
+      "°C"
+     ],
+     "sensor:supply_temperature": [
+      36.1,
+      "°C"
+     ],
+     "sensor:outside_temperature": [
+      4.1,
+      "°C"
+     ],
+     "sensor:dhw_storage_temperature": [
+      52.4,
+      "°C"
+     ],
+     "sensor:dhw_storage_top_temperature": [
+      52.4,
+      "°C"
+     ],
+     "sensor:buffer_main_temperature": [
+      36.2,
+      "°C"
+     ],
+     "binary_sensor:circulation_pump": [
+      "on",
+      null
+     ],
+     "binary_sensor:domestic_hot_water_charging": [
+      "off",
+      null
+     ],
+     "binary_sensor:domestic_hot_water_circulation_pump": [
+      "off",
+      null
+     ]
+    }
+   }
+  ],
+  "extra": {}
+ },
  "vitocal333g": {
   "title": "Vitocal 333-G",
   "refrigerant": "R410A",
@@ -466,12 +584,20 @@ window.VHP_MODELS = {
       15.5,
       "°C"
      ],
+     "sensor:primary_circuit_pump_rotation": [
+      0,
+      "%"
+     ],
      "sensor:secondary_circuit_supply_temperature": [
       35.2,
       "°C"
      ],
      "sensor:return_temperature": [
       33.2,
+      "°C"
+     ],
+     "sensor:supply_temperature": [
+      34.3,
       "°C"
      ],
      "sensor:outside_temperature": [

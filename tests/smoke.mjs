@@ -16,13 +16,13 @@ try {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DEMO = pathToFileURL(path.join(ROOT, "demo", "index.html")).href;
 
-const MODELS = ["vitocal250a", "vitocal252a", "vitocal222s", "vitocal200a", "vitocal333g"];
+const MODELS = ["vitocal250a", "vitocal252a", "vitocal222s", "vitocal200a", "vitocal300g", "vitocal333g"];
 const PHASES = ["heating", "defrost", "preparing_defrost", "passive_defrost", "cooling"];
 
 // { qs, source: expected svg class, synthetic: true when the synthetic mock (24 h cycling history) is used }
 const CASES = [
   { qs: "", source: "ground", synthetic: true },
-  ...MODELS.flatMap((m) => ["fi", "en"].map((lang) => ({ qs: `model=${m}&lang=${lang}`, source: m === "vitocal333g" ? "ground" : "air" }))),
+  ...MODELS.flatMap((m) => ["fi", "en"].map((lang) => ({ qs: `model=${m}&lang=${lang}`, source: /^vitocal3/.test(m) ? "ground" : "air" }))),
   ...PHASES.map((ph) => ({ qs: `source=air&phase=${ph}`, source: "air", synthetic: true, phase: ph })),
   { qs: "source=ground&buffer=yes&mixer=1&circuit=radiators&heater=1", source: "ground", synthetic: true },
   { qs: "split=1", source: "ground", synthetic: true },

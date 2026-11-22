@@ -2,6 +2,12 @@
 
 All notable changes to the ViCare Heat Pump Card. Versions follow [semantic versioning](https://semver.org/).
 
+## Unreleased
+
+### Added
+- Demo: a snapshot of a Vitocal 300-G (CU401B) from PyViCare's test data, with buffer cylinder and brine pump speed. The demo snapshots now include the brine pump speed (`primary_circuit_pump_rotation`) where the unit reports it.
+- README: link to the live demo on GitHub Pages.
+
 ## 1.7.0 – 2026-11-22
 
 ### Added
