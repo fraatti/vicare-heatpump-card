@@ -4,7 +4,7 @@
  * indicative health check for Viessmann heat pumps using the built-in ViCare
  * integration. MIT License.
  */
-const VHP_VERSION = "1.5.0";
+const VHP_VERSION = "1.6.0";
 
 /* Refrigerant tables generated with CoolProp (IIR reference state).
  * sat: [T °C, p_bubble bar(a), p_dew bar(a), h_liquid kJ/kg, h_vapour kJ/kg]
@@ -843,15 +843,17 @@ const VHP_SPEEDS = [{ m: 1, label: "1 min/s" }, { m: 2, label: "2 min/s" }, { m:
 const VHP_REFR_ROLES = ["hot_gas_t", "suction_t", "liquid_t"];
 /* Diagram views: full = floor heating + cylinder + brine loop, mid = cylinder with the heating
    circuit as a stub, narrow = heat pump only (phones). Paths that differ per view are in VHP_GEOM. */
-const VHP_VIEWBOX = { full: "-326 0 1178 268", mid: "-172 0 1022 268", narrow: "0 0 686 282" };
-const VHP_VIEWBOX_AIR = { full: "-326 0 1074 268", mid: "-172 0 920 268", narrow: "0 0 744 282" };
+const VHP_VIEWBOX = { full: "-318 0 1066 268", mid: "-172 0 920 268", narrow: "0 0 668 282" };
+const VHP_VIEWBOX_AIR = { full: "-318 0 1040 268", mid: "-172 0 894 268", narrow: "0 0 720 282" };
+/* The ground loop: a short hairpin right of the brine pump (x 632); the drawing ends at x 748. */
+const VHP_BRINE = "M614 220 H726 A15 15 0 0 0 726 190 H684 A14 14 0 0 1 670 176 V114 A14 14 0 0 0 656 100 H616";
 const VHP_GEOM = {
   full: { w_heat: "M70 92 V10 H-196 V120", w_fret: "M-196 252 H0 V224", w_dhw: "M62 100 H-40", ret_x1: 0,
-    brine: "M650 220 H815 A15 15 0 0 0 815 190 H714 A14 14 0 0 1 700 176 V114 A14 14 0 0 0 686 100 H652", t_dhw: [56, 92, "end"], arrow: false },
+    brine: VHP_BRINE, t_dhw: [56, 92, "end"], arrow: false },
   mid: { w_heat: "M70 92 V10 H-166", w_fret: "M-168 248 H0 V224", w_dhw: "M62 100 H-40", ret_x1: 0,
-    brine: "M650 220 H815 A15 15 0 0 0 815 190 H714 A14 14 0 0 1 700 176 V114 A14 14 0 0 0 686 100 H652", t_dhw: [56, 92, "end"], arrow: true },
+    brine: VHP_BRINE, t_dhw: [56, 92, "end"], arrow: true },
   narrow: { w_heat: "M70 92 V14 H6", w_fret: "", w_dhw: "M62 100 H6", ret_x1: 6,
-    brine: "M650 220 H666 A12 12 0 0 0 678 208 V112 A12 12 0 0 0 666 100 H652", t_dhw: [10, 147, "start"], arrow: true },
+    brine: "M614 220 H652 A12 12 0 0 0 664 208 V112 A12 12 0 0 0 652 100 H616", t_dhw: [10, 147, "start"], arrow: true },
 };
 /* Cylinder colours: cold mains water is blue, charged hot water red. */
 const VHP_TANK_SCALE = [[8, 70, 130, 220], [18, 120, 180, 235], [28, 240, 200, 130], [38, 240, 150, 70], [48, 226, 90, 48], [58, 196, 40, 40]];
@@ -1713,8 +1715,8 @@ class VicareHeatpumpCard extends HTMLElement {
     this._ro = new ResizeObserver((entries) => {
       const dw = dg.clientWidth;
       if (dw > 0) {
-        // the full view needs about 0.58 px per view box unit (wider with a buffer or a mixing valve)
-        const view = dw >= +this._vb("full").split(" ")[2] * 0.578 ? "full" : dw >= 520 ? "mid" : "narrow";
+        // the full view needs about 0.6 px per view box unit (wider with a buffer or a mixing valve)
+        const view = dw >= +this._vb("full").split(" ")[2] * 0.6 ? "full" : dw >= 520 ? "mid" : "narrow";
         const svg = dg.querySelector("svg");
         if (svg && svg.dataset.view !== view) this._applyView(svg, view);
         const vbw = +this._vb(view).split(" ")[2];
@@ -1723,12 +1725,12 @@ class VicareHeatpumpCard extends HTMLElement {
         dg.classList.toggle("narrow", view === "narrow" && k > 1.25);
         dg.classList.toggle("tight", k > 1.2);
         // air source: labels next to the outdoor unit move aside (snug) or hide (crowded) as the text grows
-        dg.classList.toggle("snug", k > 1.1);
+        dg.classList.toggle("snug", k > 1.01);
         dg.classList.toggle("crowded", k > 1.36);
         if (svg) {
           // the value pills on the bottom row grow with the text: make room so they are not clipped
           const vb = this._vb(view).split(" ");
-          vb[3] = Math.max(+vb[3], Math.ceil(240.5 + 21.8 * k));
+          vb[3] = Math.max(+vb[3], Math.ceil(240.5 + (view === "full" ? this._hl?.h || 0 : 0) + 21.8 * k));
           if (svg.getAttribute("viewBox") !== vb.join(" ")) svg.setAttribute("viewBox", vb.join(" "));
         }
       }
@@ -1794,10 +1796,10 @@ class VicareHeatpumpCard extends HTMLElement {
   }
 
   _vb(view) {
-    // an outdoor unit ends further left than the brine loop
+    // the outdoor unit (with the air arrows) ends a little left of the brine loop
     if (view !== "full" || !this._hl) return this._air ? VHP_VIEWBOX_AIR[view] : VHP_VIEWBOX[view];
-    const left = Math.min(-326, Math.floor(this._hl.left)), right = this._air ? 748 : 852;
-    return `${left} 0 ${right - left} 268`;
+    const left = Math.min(-318, Math.floor(this._hl.left)), right = this._air ? 722 : 748;
+    return `${left} 0 ${right - left} ${268 + (this._hl.h || 0)}`;
   }
 
   /* Heat distribution on the left of the hot water cylinder: optional buffer cylinder (charged from the
@@ -1839,8 +1841,8 @@ class VicareHeatpumpCard extends HTMLElement {
         <rect x="${b0}" y="38" width="${b1 - b0}" height="200" rx="18" class="shade" fill="url(#cylg)"/>
         <rect x="${b0 + 7}" y="45" width="${b1 - b0 - 14}" height="186" rx="12" class="tankw" fill="url(#bufg)"/>
         <rect x="${b0 + 7}" y="45" width="${b1 - b0 - 14}" height="186" rx="12" class="shade" fill="url(#cylg)"/>
-        <text x="${(b0 + b1) / 2}" y="${R0 + 34}" text-anchor="middle" class="tanknum bufnum" id="v_buf">–</text>
-        <text x="${(b0 + b1) / 2}" y="${R0 + 34}" dy="1.25em" text-anchor="middle" class="tankcap">${i.buffer}</text></g>`);
+        <text x="${(b0 + b1) / 2}" y="${R0 + 46}" text-anchor="middle" class="tanknum bufnum" id="v_buf">–</text>
+        <text x="${(b0 + b1) / 2}" y="${R0 + 46}" dy="1.25em" text-anchor="middle" class="tankcap">${i.buffer}</text></g>`);
       x = b0;
     } else {
       w_heat = `M70 92 V10 H-186 V${R0}`;
@@ -1893,7 +1895,7 @@ class VicareHeatpumpCard extends HTMLElement {
     out.push(this._roles?.circ_supply
       ? `<g class="circlbl">${this._lbl(cx, 22, "circ_supply", name)}</g>`
       : `<text x="${cx}" y="${R0 - 16}" text-anchor="middle" class="cap">${name}</text>`);
-    return { svg: out.join("\n"), w_heat, w_fret, left: left - 18 };
+    return { svg: out.join("\n"), w_heat, w_fret, left: left - 10 };
   }
 
   /* Two heating circuits stacked on the left: circuit 1 on the upper rows, circuit 2 on the lower rows.
@@ -1903,9 +1905,11 @@ class VicareHeatpumpCard extends HTMLElement {
      the heat pump's circulation pump drives the circuit. */
   _heatLayout2() {
     const i = this._i, cfg = this._config, buf = !!this._buffer;
+    // the full view is H units taller so that the two loops together span about the height of the cylinders
+    const H = 16;
     const C = [
-      { n: 1, R0: 60, R1: 114, mix: !!cfg.mixer, rad: cfg.heating_circuit === "radiators", sfx: "", role: "circ_supply", pump: "circ_pump", mixer: "mixer" },
-      { n: 2, R0: 162, R1: 216, mix: !!cfg.mixer_2, rad: this._circ2 === "radiators", sfx: "2", role: "circ_supply_2", pump: "circ_pump_2", mixer: "mixer_2" },
+      { n: 1, R0: 60, R1: 131, mix: !!cfg.mixer, rad: cfg.heating_circuit === "radiators", sfx: "", role: "circ_supply", pump: "circ_pump", mixer: "mixer" },
+      { n: 2, R0: 165, R1: 236, mix: !!cfg.mixer_2, rad: this._circ2 === "radiators", sfx: "2", role: "circ_supply_2", pump: "circ_pump_2", mixer: "mixer_2" },
     ];
     const names = this._circNames();
     const out = [];
@@ -1928,7 +1932,7 @@ class VicareHeatpumpCard extends HTMLElement {
       w_heat = "M70 92 V10 H-186 V60";
       xT = -186;
       xR = -198;
-      w_fret = `M${xR} 216 V252 H0 V224`;
+      w_fret = `M${xR} ${C[1].R1} V252 H0 V224`;
     }
     // shared pipes run with either circuit pump (buffer) or with the heat pump's water loop
     const fa = buf ? "cflowa" : "brh wflow";
@@ -1943,8 +1947,10 @@ class VicareHeatpumpCard extends HTMLElement {
     }
     const xs = Math.min(C[0].xs, C[1].xs); // both circuit bodies start at the same x
     // return manifold, then a gap where the supply of circuit 2 crosses it
-    out.push(`<path class="wl ${buf ? "cret" : "ret"} ${fa}" d="M${xR} ${C[0].R1} V${C[1].R1}"/>`);
-    if (buf) out.push(`<path class="wl cret ${fa}" d="M${xR} ${C[1].R1} H${b0}" marker-end="url(#ah)"/>`);
+    // with a buffer the returns join at its lower inlet (yJ): circuit 1 flows down to it, circuit 2 up
+    const yJ = buf ? 220 : C[1].R1;
+    out.push(`<path class="wl ${buf ? "cret" : "ret"} ${fa}" d="M${xR} ${C[0].R1} V${yJ}"/>`);
+    if (buf) out.push(`<path class="wl cret ${fa}" d="M${xR} ${C[1].R1} V${yJ}"/>`, `<path class="wl cret ${fa}" d="M${xR} ${yJ} H${b0}" marker-end="url(#ah)"/>`);
     out.push(`<path class="xgap" d="M${xR + 4.5} ${C[1].R0} H${xR - 4.5}"/>`);
     // supply from the source to the branch, and the branch down to circuit 2
     if (buf) out.push(`<path class="wl src ${fa}" d="M${b0} ${C[0].R0} H${xT}"/>`);
@@ -1987,28 +1993,30 @@ class VicareHeatpumpCard extends HTMLElement {
           <line x1="${m}" y1="${R0}" x2="${m}" y2="${R0 - 10}" class="mvs"/><circle cx="${m}" cy="${R0 - 16}" r="6" class="mvm"/>
           <text x="${m}" y="${R0 - 13}" text-anchor="middle" class="mvt">M</text>
           ${c.n === 1 ? `<text x="${m}" y="${R0 - 27}" text-anchor="middle" class="cap" id="v_mixer"></text>`
-            // circuit 2: the text ends at the valve so it stays clear of the supply branch and the return manifold
-            : `<text x="${m + 8}" y="${R0 - 27}" text-anchor="end" class="cap" id="v_mixer2"></text>`}</g>`);
+            // circuit 2: left of the valve motor, above the pump, clear of circuit 1, the supply branch and the manifold
+            : `<text x="${m - 10}" y="${R0 - 15}" text-anchor="end" class="cap" id="v_mixer2"></text>`}</g>`);
       }
       if (c.own) {
         const p = c.pumpX;
         out.push(`<g id="hpump${sfx}" class="pumpsym" data-role="${c.pump}"><circle cx="${p}" cy="${R0}" r="8.5" class="pc"/>
           <g class="ptg" style="transform-origin:${p}px ${R0}px"><path d="M${p - 8.5} ${R0} L${p + 4.25} ${R0 - 7.36} L${p + 4.25} ${R0 + 7.36} Z" class="pt"/></g>
-          <text x="${p}" y="${R0 + 24}" text-anchor="middle" class="cap" id="v_hpump${sfx}"></text></g>`);
+          ${c.n === 2 && !c.mix // next to the return manifold: the text ends short of it
+            ? `<text x="${p + 7}" y="${R0 + 24}" text-anchor="end" class="cap" id="v_hpump2"></text>`
+            : `<text x="${p}" y="${R0 + 24}" text-anchor="middle" class="cap" id="v_hpump${sfx}"></text>`}</g>`);
       }
       c.cx = (l + xs) / 2;
     }
     // junctions
-    out.push(`<circle cx="${xT}" cy="${C[0].R0}" r="3" class="tee src"/>`, `<circle cx="${xR}" cy="${C[1].R1}" r="3" class="tee"/>`);
+    out.push(`<circle cx="${xT}" cy="${C[0].R0}" r="3" class="tee src"/>`, `<circle cx="${xR}" cy="${yJ}" r="3" class="tee"/>`);
     // circuit 1 is named above its loop, circuit 2 below its loop
     const [c1, c2] = C;
     out.push(this._roles?.circ_supply
       ? `<g class="circlbl">${this._lbl(c1.cx, 22, "circ_supply", names[0])}</g>`
       : `<text x="${c1.cx}" y="${c1.R0 - 16}" text-anchor="middle" class="cap">${names[0]}</text>`);
     out.push(this._roles?.circ_supply_2
-      ? `<g class="circlbl">${this._lbl(c2.cx, 238, "circ_supply_2", names[1])}</g>`
+      ? `<g class="circlbl">${this._lbl(c2.cx, 238 + H, "circ_supply_2", names[1])}</g>`
       : `<text x="${c2.cx}" y="${c2.R1 + 22}" text-anchor="middle" class="cap">${names[1]}</text>`);
-    return { svg: out.join("\n"), w_heat, w_fret, left: left - 18, gy: [C[0].R0, C[0].R1], gy2: [C[1].R0, C[1].R1] };
+    return { svg: out.join("\n"), w_heat, w_fret, left: left - 10, gy: [C[0].R0, C[0].R1], gy2: [C[1].R0, C[1].R1], h: H };
   }
 
   _applyView(svg, view) {
@@ -2036,7 +2044,7 @@ class VicareHeatpumpCard extends HTMLElement {
     // on a phone the outdoor unit box starts lower and further right to leave room for the suction labels
     const odu = svg.querySelector("rect.odu");
     if (odu) {
-      const [x, y, w, h] = view === "narrow" ? [468, 70, 246, 190] : [456, 44, 258, 216];
+      const [x, y, w, h] = view === "narrow" ? [468, 70, 222, 190] : [456, 44, 234, 216];
       Object.entries({ x, y, width: w, height: h }).forEach(([a, v]) => odu.setAttribute(a, v));
     }
   }
@@ -2192,8 +2200,8 @@ class VicareHeatpumpCard extends HTMLElement {
           <stop offset="0" style="stop-color: var(--bin-c, var(--vhp-brine))"/><stop offset="1" style="stop-color: var(--bout-c, var(--vhp-brine))"/></linearGradient>
       </defs>
       ${air ? `<!-- outdoor unit: the refrigerant pipes run inside it to the finned coil -->
-      <g id="odu"><rect x="456" y="44" width="258" height="216" rx="10" class="odu"/>
-        <text x="706" y="254" text-anchor="end" class="cap oducap">${i.outdoor_unit}</text></g>` : ""}
+      <g id="odu"><rect x="456" y="44" width="234" height="216" rx="10" class="odu"/>
+        <text x="682" y="254" text-anchor="end" class="cap oducap">${i.outdoor_unit}</text></g>` : ""}
       <!-- refrigerant lines -->
       ${air ? `
       <g class="nrm">
@@ -2313,35 +2321,36 @@ class VicareHeatpumpCard extends HTMLElement {
       <line class="wl ret wflow" id="w_ret" x1="0" y1="220" x2="168" y2="220" marker-end="url(#ah)"/>
       <!-- brine / source side -->
       <g id="brineside"${air ? ' style="display:none"' : ""}>
-      <line class="wl bin bflow" x1="654" y1="100" x2="512" y2="100" marker-end="url(#ah)"/>
-      <line class="wl bout bflow" x1="508" y1="220" x2="652" y2="220"/>
-      <path class="wl brine bflow" id="brinel" d="M650 220 H815 A15 15 0 0 0 815 190 H714 A14 14 0 0 1 700 176 V114 A14 14 0 0 0 686 100 H652"/>
-      <text x="758" y="174" text-anchor="middle" class="cap brinecap">${i.brine_circuit}</text>
-      ${air ? "" : `<g class="brinecap">${lbl(768, 24, "outside", i.outdoor_air)}</g>`}
+      <line class="wl bin bflow" x1="618" y1="100" x2="512" y2="100" marker-end="url(#ah)"/>
+      <line class="wl bout bflow" x1="508" y1="220" x2="616" y2="220"/>
+      <path class="wl brine bflow" id="brinel" d="${VHP_BRINE}"/>
+      <!-- the loop's name sits under the hairpin, ending at the right edge -->
+      <text x="745" y="252" text-anchor="end" class="cap brinecap">${i.brine_circuit}</text>
+      ${air ? "" : `<g class="brinecap">${lbl(700, 24, "outside", i.outdoor_air)}</g>`}
       <g id="pump" class="pumpsym brinep" data-role="pri_pump" style="display:none">
-        <circle cx="668" cy="100" r="9" class="pc"/>
-        <g class="ptg" style="transform-origin:668px 100px"><path d="M659 100 L672.5 92.2 L672.5 107.8 Z" class="pt"/></g>
-        <text x="668" y="126" text-anchor="end" class="cap" id="v_pri_pump">–</text>
+        <circle cx="632" cy="100" r="9" class="pc"/>
+        <g class="ptg" style="transform-origin:632px 100px"><path d="M623 100 L636.5 92.2 L636.5 107.8 Z" class="pt"/></g>
+        <text x="632" y="126" text-anchor="end" class="cap" id="v_pri_pump">–</text>
       </g>
       </g>
       ${air ? `<!-- fan: outdoor air through the coil -->
-      <g class="airf"><path d="M742 112 H694" marker-end="url(#ah)"/><path d="M742 208 H694" marker-end="url(#ah)"/>
-        <path d="M622 112 H530" marker-end="url(#ah)"/><path d="M622 208 H530" marker-end="url(#ah)"/></g>
+      <g class="airf"><path d="M718 112 H670" marker-end="url(#ah)"/><path d="M718 208 H670" marker-end="url(#ah)"/>
+        <path d="M598 112 H530" marker-end="url(#ah)"/><path d="M598 208 H530" marker-end="url(#ah)"/></g>
       <g id="fan" class="fan" data-role="fan">
-        <circle cx="656" cy="160" r="24" class="fanc"/>
-        <g class="fanr" style="transform-origin:656px 160px">${[0, 120, 240].map((a) => `<path d="M656 160 C657 149 665 140 674 144 C677 152 667 160 656 160 Z" class="fanb" transform="rotate(${a} 656 160)"/>`).join("")}</g>
-        <circle cx="656" cy="160" r="2.6" class="fanh"/>
-        <text x="656" y="200" text-anchor="middle" class="cap" id="v_fan">${i.fan}</text></g>
-      ${lbl(666, 56, "outside", i.outdoor_air)}
-      <g class="airin">${lbl(574, 56, "pri_supply", i.air_in)}</g>` : ""}
+        <circle cx="632" cy="160" r="24" class="fanc"/>
+        <g class="fanr" style="transform-origin:632px 160px">${[0, 120, 240].map((a) => `<path d="M632 160 C633 149 641 140 650 144 C653 152 643 160 632 160 Z" class="fanb" transform="rotate(${a} 632 160)"/>`).join("")}</g>
+        <circle cx="632" cy="160" r="2.6" class="fanh"/>
+        <text x="632" y="200" text-anchor="middle" class="cap" id="v_fan">${i.fan}</text></g>
+      ${lbl(644, 56, "outside", i.outdoor_air)}
+      <g class="airin">${lbl(560, 56, "pri_supply", i.air_in)}</g>` : ""}
       <!-- values -->
       ${lbl(258, 24, "hot_gas_t", i.hot_gas, "middle", "hot", "hot_gas_p")}
       ${lbl(424, 24, "suction_t", i.suction, "middle", "suc", "suction_p")}
       ${lbl(126, 57, "sec_supply", i.supply)}
       ${lbl(90, 238, "sec_return", i.return)}
       ${lbl(278, 238, "liquid_t", i.liquid)}
-      ${air ? "" : `${lbl(600, 64, "pri_supply", grd ? i.from_ground : i.from_source)}
-      ${lbl(600, 238, "pri_return", grd ? i.to_ground : i.to_source)}`}
+      ${air ? "" : `${lbl(584, 64, "pri_supply", grd ? i.from_ground : i.from_source)}
+      ${lbl(584, 238, "pri_return", grd ? i.to_ground : i.to_source)}`}
       <text x="164" y="168" text-anchor="end" class="mid cyc" id="v_tc">tc –</text>
       <text x="${air ? 528 : 516}" y="168" class="mid cyc" id="v_t0">t0 –</text>
       <g class="val" data-role="subcooling"><text x="${air ? 258 : 278}" y="${air ? 128 : 174}" text-anchor="middle" class="cap">${i.subcooling}</text><text x="${air ? 258 : 278}" y="${air ? 128 : 174}" dy="1.3em" text-anchor="middle" class="num" id="v_sc">–</text></g>
@@ -2352,8 +2361,8 @@ class VicareHeatpumpCard extends HTMLElement {
       <g class="sm" data-role="liquid_t"><circle cx="278" cy="220" r="4.5" class="smc warm"/></g>
       <g class="sm" data-role="sec_supply"><circle cx="126" cy="100" r="4.5" class="smc sup"/></g>
       <g class="sm" data-role="sec_return"><circle cx="90" cy="220" r="4.5" class="smc ret"/></g>
-      ${air ? "" : `<g class="sm" data-role="pri_supply"><circle cx="600" cy="100" r="4.5" class="smc bin"/></g>
-      <g class="sm" data-role="pri_return"><circle cx="600" cy="220" r="4.5" class="smc bout"/></g>`}
+      ${air ? "" : `<g class="sm" data-role="pri_supply"><circle cx="584" cy="100" r="4.5" class="smc bin"/></g>
+      <g class="sm" data-role="pri_return"><circle cx="584" cy="220" r="4.5" class="smc bout"/></g>`}
       <text x="186" y="252" text-anchor="middle" class="cap hxcap" id="hxcap_c">${i.condenser}</text>
       <text x="494" y="252" text-anchor="middle" class="cap hxcap" id="hxcap_e">${i.evaporator}</text>
     </svg>`;
@@ -3145,6 +3154,8 @@ ha-card { padding: 14px 16px 12px; overflow: hidden; container-type: inline-size
 svg.v-narrow #v_tc { transform: translateY(8px); }
 .diagram.narrow #v_heater { display: none; }
 .diagram.narrow svg.ground .val[data-role="pri_supply"] { transform: translateY(-4px); }
+/* large text: the evaporator caption gives the brine return label room (the expansion valve caption is hidden) */
+.diagram.tight svg.ground:not(.v-narrow) #hxcap_e { transform: translateX(-8px); }
 /* air source with large text: keep the labels clear of the outdoor unit box. Superheat moves under the
    expansion valve (its caption gives way), the suction labels shift left and the pills inside the box drop. */
 .diagram.snug svg.air .val[data-role="superheat"] { transform: translate(18px, 112px); }

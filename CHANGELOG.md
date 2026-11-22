@@ -2,6 +2,13 @@
 
 All notable changes to the ViCare Heat Pump Card. Versions follow [semantic versioning](https://semver.org/).
 
+## 1.6.0 – 2026-11-22
+
+### Changed
+- The diagram is better balanced and drawn larger: the right side is narrower (shorter ground loop with the brine pump and labels closer to the evaporator, "Brine circuit" under the loop, outdoor air above it; a narrower outdoor unit for air source), and the left margin is smaller. At the same card width the full view is about 9–10 % larger for ground source and 3 % for air source (mid view: 11 % and 3 %, phone view: 3 %).
+- Two heating circuits are drawn taller (71 instead of 54 units each) and the full view is 16 units taller for them; the second circuit's mixing valve caption sits left of the valve motor.
+- The full view is used from 0.6 px per drawing unit (was 0.58), so labels stay clear of each other at its narrowest. Fixed text overlaps at that width (buffer temperature and pump speed, brine return and evaporator captions) and the air source superheat caption touching the outdoor unit at about 860 px.
+
 ## 1.5.0 – 2026-11-22
 
 ### Added
