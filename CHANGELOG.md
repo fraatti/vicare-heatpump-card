@@ -2,6 +2,11 @@
 
 All notable changes to the ViCare Heat Pump Card. Versions follow [semantic versioning](https://semver.org/).
 
+## 1.5.0 – 2026-11-22
+
+### Added
+- Input power of the unit from your own meter (role `power`, W or kW). Shown in the header next to the outdoor temperature and follows the history cursor; hidden when no entity is set. The sign is ignored, as sub-meters often report consumption as negative.
+
 ## 1.4.0 – 2026-11-22
 
 ### Added

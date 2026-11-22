@@ -4,7 +4,7 @@
  * indicative health check for Viessmann heat pumps using the built-in ViCare
  * integration. MIT License.
  */
-const VHP_VERSION = "1.4.0";
+const VHP_VERSION = "1.5.0";
 
 /* Refrigerant tables generated with CoolProp (IIR reference state).
  * sat: [T °C, p_bubble bar(a), p_dew bar(a), h_liquid kJ/kg, h_vapour kJ/kg]
@@ -37,6 +37,7 @@ const VHP_I18N = {
     subcooling: "Alijäähdytys",
     superheat: "Tulistus",
     outside: "Ulko",
+    power_in: "Ottoteho",
     cop: "COP",
     cop_heating: "lämmitys",
     cop_dhw: "käyttövesi",
@@ -196,6 +197,7 @@ const VHP_I18N = {
       log_markers: "Lokin merkit aikajanalla",
       cold_water: "Kylmän veden lämpötila",
       entities: "Anturit (tyhjä = automaattinen)",
+      r_power: "Ottoteho (oma mittari, W tai kW)",
       r_hot_gas_t: "Kuumakaasun lämpötila", r_hot_gas_p: "Kuumakaasun paine", r_suction_t: "Imukaasun lämpötila", r_suction_p: "Imukaasun paine", r_liquid_t: "Nestelinjan lämpötila", r_subcooling: "Alijäähdytys", r_superheat: "Tulistus", r_compressor: "Kompressori (päällä/pois)", r_comp_speed: "Kompressorin nopeus (% tai rps)", r_eev: "Paisuntaventtiilin avaus %", r_phase: "Kompressorin vaihe", r_starts: "Käynnistykset", r_sec_supply: "Menovesi (lämpöpumppu)", r_sec_return: "Paluuvesi (lämpöpumppu)", r_circ_pump: "Kiertovesipumppu", r_circ_pump_speed: "Kiertovesipumpun nopeus %", r_dhw_charging: "Käyttövesilataus (vaihtoventtiili)", r_dhw_top: "Käyttövesivaraajan lämpötila", r_dhw_circ: "Käyttöveden kiertopumppu", r_buffer_t: "Puskurivaraajan lämpötila", r_circ_supply: "Lämmityspiirin menovesi", r_mixer: "Shuntin avaus %", r_heater: "Sähkövastus (päällä tai teho)", r_pri_supply: "Liuos kaivolta / ilma sisään", r_pri_return: "Liuos kaivoon", r_pri_pump: "Liuospumpun nopeus %", r_fan: "Puhaltimen nopeus %", r_outside: "Ulkolämpötila", r_cop_heating: "COP lämmitys", r_cop_dhw: "COP käyttövesi", r_cop_total: "COP yhteensä", r_circ_supply_2: "Lämmityspiirin 2 menovesi", r_circ_pump_2: "Lämmityspiirin 2 kiertovesipumppu", r_circ_pump_speed_2: "Lämmityspiirin 2 pumpun nopeus %", r_mixer_2: "Shuntin 2 avaus %",
     },
   },
@@ -222,6 +224,7 @@ const VHP_I18N = {
     subcooling: "Subcooling",
     superheat: "Superheat",
     outside: "Outside",
+    power_in: "Input power",
     cop: "COP",
     cop_heating: "heating",
     cop_dhw: "hot water",
@@ -381,6 +384,7 @@ const VHP_I18N = {
       log_markers: "Logbook markers on the timeline",
       cold_water: "Cold water temperature",
       entities: "Sensors (empty = automatic)",
+      r_power: "Input power (own meter, W or kW)",
       r_hot_gas_t: "Hot gas temperature", r_hot_gas_p: "Hot gas pressure", r_suction_t: "Suction gas temperature", r_suction_p: "Suction gas pressure", r_liquid_t: "Liquid line temperature", r_subcooling: "Subcooling", r_superheat: "Superheat", r_compressor: "Compressor (on/off)", r_comp_speed: "Compressor speed (% or rps)", r_eev: "Expansion valve opening %", r_phase: "Compressor phase", r_starts: "Compressor starts", r_sec_supply: "Supply water (heat pump)", r_sec_return: "Return water (heat pump)", r_circ_pump: "Circulation pump", r_circ_pump_speed: "Circulation pump speed %", r_dhw_charging: "Hot water charging (diverter valve)", r_dhw_top: "Hot water cylinder temperature", r_dhw_circ: "DHW circulation pump", r_buffer_t: "Buffer cylinder temperature", r_circ_supply: "Heating circuit supply", r_mixer: "Mixing valve opening %", r_heater: "Electric heater (on or power)", r_pri_supply: "Brine from ground / air in", r_pri_return: "Brine to ground", r_pri_pump: "Brine pump speed %", r_fan: "Fan speed %", r_outside: "Outdoor temperature", r_cop_heating: "COP heating", r_cop_dhw: "COP hot water", r_cop_total: "COP total", r_circ_supply_2: "Heating circuit 2 supply", r_circ_pump_2: "Heating circuit 2 pump", r_circ_pump_speed_2: "Heating circuit 2 pump speed %", r_mixer_2: "Mixing valve 2 opening %",
     },
   },
@@ -410,6 +414,7 @@ const VHP_I18N_SV = {
     subcooling: "Underkylning",
     superheat: "Överhettn.",
     outside: "Ute",
+    power_in: "Tillförd effekt",
     cop: "COP",
     cop_heating: "värme",
     cop_dhw: "varmvatten",
@@ -569,6 +574,7 @@ const VHP_I18N_SV = {
       log_markers: "Loggboksmarkeringar på tidslinjen",
       cold_water: "Kallvattentemperatur",
       entities: "Givare (tomt = automatiskt)",
+      r_power: "Tillförd effekt (egen mätare, W eller kW)",
       r_hot_gas_t: "Hetgastemperatur", r_hot_gas_p: "Hetgastryck", r_suction_t: "Suggastemperatur", r_suction_p: "Suggastryck", r_liquid_t: "Vätskeledningens temperatur", r_subcooling: "Underkylning", r_superheat: "Överhettning", r_compressor: "Kompressor (till/från)", r_comp_speed: "Kompressorvarvtal (% eller rps)", r_eev: "Expansionsventilens öppning %", r_phase: "Kompressorfas", r_starts: "Kompressorstarter", r_sec_supply: "Framledning (värmepump)", r_sec_return: "Retur (värmepump)", r_circ_pump: "Cirkulationspump", r_circ_pump_speed: "Cirkulationspumpens varvtal %", r_dhw_charging: "Varmvattenladdning (växelventil)", r_dhw_top: "Varmvattenberedarens temperatur", r_dhw_circ: "VVC-pump", r_buffer_t: "Ackumulatortankens temperatur", r_circ_supply: "Värmekretsens framledning", r_mixer: "Shuntens öppning %", r_heater: "Elpatron (till eller effekt)", r_pri_supply: "Köldbärare från marken / luft in", r_pri_return: "Köldbärare till marken", r_pri_pump: "Köldbärarpumpens varvtal %", r_fan: "Fläktvarvtal %", r_outside: "Utetemperatur", r_cop_heating: "COP värme", r_cop_dhw: "COP varmvatten", r_cop_total: "COP totalt", r_circ_supply_2: "Värmekrets 2 framledning", r_circ_pump_2: "Värmekrets 2 cirkulationspump", r_circ_pump_speed_2: "Värmekrets 2 pumpvarvtal %", r_mixer_2: "Shunt 2 öppning %",
     },
 };
@@ -595,6 +601,7 @@ const VHP_I18N_DE = {
     subcooling: "Unterkühlung",
     superheat: "Überhitzung",
     outside: "Außen",
+    power_in: "Leistungsaufnahme",
     cop: "COP",
     cop_heating: "Heizen",
     cop_dhw: "Warmwasser",
@@ -754,6 +761,7 @@ const VHP_I18N_DE = {
       log_markers: "Logbuch-Markierungen auf der Zeitleiste",
       cold_water: "Kaltwassertemperatur",
       entities: "Sensoren (leer = automatisch)",
+      r_power: "Leistungsaufnahme (eigener Zähler, W oder kW)",
       r_hot_gas_t: "Heißgastemperatur", r_hot_gas_p: "Heißgasdruck", r_suction_t: "Sauggastemperatur", r_suction_p: "Sauggasdruck", r_liquid_t: "Flüssiggastemperatur", r_subcooling: "Unterkühlung", r_superheat: "Überhitzung", r_compressor: "Verdichter (ein/aus)", r_comp_speed: "Verdichterdrehzahl (% oder rps)", r_eev: "Öffnung Expansionsventil %", r_phase: "Verdichterphase", r_starts: "Verdichterstarts", r_sec_supply: "Vorlauf (Wärmepumpe)", r_sec_return: "Rücklauf (Wärmepumpe)", r_circ_pump: "Sekundärpumpe", r_circ_pump_speed: "Drehzahl Sekundärpumpe %", r_dhw_charging: "Warmwasserbereitung (Umschaltventil)", r_dhw_top: "Warmwasserspeichertemperatur", r_dhw_circ: "Zirkulationspumpe", r_buffer_t: "Pufferspeichertemperatur", r_circ_supply: "Heizkreis Vorlauf", r_mixer: "Mischeröffnung %", r_heater: "Heizwasser-Durchlauferhitzer (ein oder Leistung)", r_pri_supply: "Sole vom Erdreich / Lufteintritt", r_pri_return: "Sole zum Erdreich", r_pri_pump: "Drehzahl Solepumpe %", r_fan: "Ventilatordrehzahl %", r_outside: "Außentemperatur", r_cop_heating: "COP Heizen", r_cop_dhw: "COP Warmwasser", r_cop_total: "COP gesamt", r_circ_supply_2: "Heizkreis 2 Vorlauf", r_circ_pump_2: "Heizkreis 2 Pumpe", r_circ_pump_speed_2: "Drehzahl Heizkreispumpe 2 %", r_mixer_2: "Mischer 2 Öffnung %",
     },
 };
@@ -808,6 +816,7 @@ const VHP_ROLES = {
   mixer_2: { d: "sensor", k: [] },
   heater: { d: "sensor", k: [] },
   fan: { d: "sensor", k: [] },
+  power: { d: "sensor", k: [] }, // input power of the unit from your own meter (W or kW); ViCare has none
   eev: { d: "sensor", k: [] },
 };
 const VHP_ALL_KEYS = new Set(Object.values(VHP_ROLES).flatMap((r) => r.k));
@@ -815,7 +824,7 @@ const VHP_ALL_KEYS = new Set(Object.values(VHP_ROLES).flatMap((r) => r.k));
 const VHP_EDIT_ROLES = ["hot_gas_t", "hot_gas_p", "suction_t", "suction_p", "liquid_t", "subcooling", "superheat", "eev", "compressor", "comp_speed", "phase", "starts",
   "sec_supply", "sec_return", "circ_pump", "circ_pump_speed", "dhw_charging", "dhw_top", "dhw_circ", "buffer_t", "circ_supply", "mixer",
   "circ_supply_2", "circ_pump_2", "circ_pump_speed_2", "mixer_2", "heater",
-  "pri_supply", "pri_return", "pri_pump", "fan", "outside", "cop_heating", "cop_dhw", "cop_total"];
+  "pri_supply", "pri_return", "pri_pump", "fan", "outside", "power", "cop_heating", "cop_dhw", "cop_total"];
 /* Roles worth reporting as missing (the circuit view depends on them). */
 const VHP_IMPORTANT = ["hot_gas_t", "hot_gas_p", "suction_t", "suction_p", "liquid_t", "pri_supply", "sec_supply", "compressor", "phase", "dhw_charging"];
 
@@ -2579,6 +2588,12 @@ class VicareHeatpumpCard extends HTMLElement {
       const parts = [];
       const out = this._val("outside");
       if (this._roles.outside) parts.push(`<span class="chip" data-role="outside">${i.outside} ${f(out)}</span>`);
+      if (this._roles.power) {
+        // own meter: W or kW, sign ignored (a sub-meter often reports consumption as negative)
+        const pw = Math.abs(this._val("power")), u = (this._hass.states[this._roles.power]?.attributes?.unit_of_measurement || "W").toLowerCase();
+        const kw = u === "kw" ? pw : u === "mw" ? pw * 1000 : pw / 1000;
+        parts.push(`<span class="chip" data-role="power">${i.power_in} ${isFinite(kw) ? `${this._fmt(kw, kw < 10 ? 2 : 1)} kW` : "–"}</span>`);
+      }
       const ch = this._val("cop_heating"), cd = this._val("cop_dhw");
       if (isFinite(ch) || isFinite(cd))
         parts.push(`<span class="chip" data-role="cop_heating">${i.cop} ${i.cop_heating} ${this._fmt(ch)} · ${i.cop_dhw} ${this._fmt(cd)}</span>`);

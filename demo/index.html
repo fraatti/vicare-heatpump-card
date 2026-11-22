@@ -9,7 +9,7 @@ if(!customElements.get('ha-card'))customElements.define('ha-card',class extends 
 const q=new URLSearchParams(location.search);const cfg={type:'custom:vicare-heatpump-card',refrigerant:'R410A',hours:24,
 source:q.get('source')||'auto',buffer:q.get('buffer')||'no',mixer:q.get('mixer')==='1',heating_circuit:q.get('circuit')||'floor',heater:q.get('heater')==='1'?'auto':'no',
 heating_circuit_2:q.get('circuit2')||'auto',mixer_2:q.get('mixer2')==='1',circuit_name:q.get('name1')||undefined,circuit_name_2:q.get('name2')||undefined,
-entities:{heater:'sensor.cu401b_g_heater_power',mixer:'sensor.cu401b_g_mixer_position',circ_pump_speed:'sensor.cu401b_g_circuit_pump_speed',fan:'sensor.cu401b_g_fan_speed',eev:'sensor.cu401b_g_eev_position'}};
+entities:{heater:'sensor.cu401b_g_heater_power',mixer:'sensor.cu401b_g_mixer_position',circ_pump_speed:'sensor.cu401b_g_circuit_pump_speed',fan:'sensor.cu401b_g_fan_speed',eev:'sensor.cu401b_g_eev_position',power:'sensor.cu401b_g_input_power'}};
 if(q.get('circuits')==='2')Object.assign(cfg.entities,{mixer_2:'sensor.cu401b_g_mixer_position_2',circ_pump_speed_2:'sensor.cu401b_g_circuit_pump_speed_2'});
 const pick=document.getElementById('pick');
 for(const [id,m] of Object.entries(window.VHP_MODELS||{})){const o=document.createElement('option');o.value=id;o.textContent=m.title+' ('+m.refrigerant+')';pick.appendChild(o);}

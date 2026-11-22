@@ -49,7 +49,7 @@
     domestic_hot_water_charging: ["binary_sensor"], dhw_storage_top_temperature: ["sensor", "°C"], cop_heating: ["sensor"],
     cop_dhw: ["sensor"], compressor_starts: ["sensor"],
     buffer_main_temperature: ["sensor", "°C"], supply_temperature: ["sensor", "°C"],
-    heater_power: ["sensor", "kW"], mixer_position: ["sensor", "%"], circuit_pump_speed: ["sensor", "%"], fan_speed: ["sensor", "%"], compressor_modulation: ["sensor", "%"], eev_position: ["sensor", "%"],
+    heater_power: ["sensor", "kW"], mixer_position: ["sensor", "%"], circuit_pump_speed: ["sensor", "%"], fan_speed: ["sensor", "%"], compressor_modulation: ["sensor", "%"], eev_position: ["sensor", "%"], input_power: ["sensor", "W"],
   };
   if (AIR) delete R.primary_circuit_return_temperature; // an air source unit has no brine return
   // ?circuits=2: a second heating circuit. ViCare gives its entities the same translation key with an "_2"
@@ -73,7 +73,7 @@
       circulation_pump: "on", domestic_hot_water_circulation_pump: "off", compressor_phase: on ? "heating" : prep ? "preparing" : "pause",
       domestic_hot_water_charging: "off", dhw_storage_top_temperature: 45.9, cop_heating: 4.6, cop_dhw: 3.4, compressor_starts: 40654,
       buffer_main_temperature: on ? 31 + 3 * k : 33 - 3 * off, supply_temperature: 29.5, heater_power: on && k > 0.8 ? 3 : 0, mixer_position: 42, circuit_pump_speed: 68,
-      fan_speed: on ? 45 : 0, compressor_modulation: on ? 40 + 35 * k : 0, eev_position: on ? 34 : 0,
+      fan_speed: on ? 45 : 0, compressor_modulation: on ? 40 + 35 * k : 0, eev_position: on ? 34 : 0, input_power: on ? -2350 - 300 * k : -18,
       // two circuits: radiators at about 45 °C, a mixed floor loop at about 31 °C
       ...(TWO ? { supply_temperature: 45.2, supply_temperature_2: 31.1, circulation_pump_2: "on", mixer_position_2: 27, circuit_pump_speed_2: 55 } : {}),
     };
