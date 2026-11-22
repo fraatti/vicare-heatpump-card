@@ -1,5 +1,42 @@
-// Minimal mock of hass for local previews of the card (synthetic data).
+// Minimal mock of hass for local previews of the card.
+// ?model=<id> shows a snapshot of a real unit from demo/models.js (PyViCare test data), otherwise synthetic data.
 (function () {
+  const M = window.VHP_MODELS?.[new URLSearchParams(location.search).get("model")];
+  if (M) {
+    const now = Date.now(), states = {}, entities = {}, devices = {}, extra = {};
+    const lang = new URLSearchParams(location.search).get("lang") || "en";
+    const put = (id, v, u, ent) => {
+      entities[id] = ent;
+      states[id] = { entity_id: id, state: v === null || v === undefined ? "unavailable" : String(v), attributes: { unit_of_measurement: u || undefined, friendly_name: id }, last_changed: new Date(now - 45 * 60000).toISOString() };
+    };
+    M.devices.forEach((d, n) => {
+      const dev = "dev" + (n + 1), slug = "unit" + (n + 1);
+      devices[dev] = { id: dev, name: d.name, config_entries: ["ce1"] };
+      for (const [k, [v, u]] of Object.entries(d.entities)) {
+        const [dom, tk] = k.split(":");
+        put(`${dom}.${slug}_${tk}`, v, u, { entity_id: `${dom}.${slug}_${tk}`, platform: "vicare", translation_key: tk, device_id: dev });
+      }
+    });
+    for (const [role, [v, u]] of Object.entries(M.extra)) {
+      const id = `sensor.api_${role}`;
+      put(id, v, u, { entity_id: id, platform: "template" });
+      extra[role] = id;
+    }
+    window.mockModel = { ...M, entities: extra };
+    window.mockHass = {
+      states, entities, devices, locale: { language: lang, number_format: "language" }, language: lang, config: { time_zone: "Europe/Helsinki" }, themes: { darkMode: false },
+      // the snapshot stands still for the whole history
+      callWS: async (msg) => {
+        const a = Date.parse(msg.start_time), out = {};
+        // a running compressor started 45 minutes ago
+        for (const id of msg.entity_ids) if (states[id])
+          out[id] = entities[id].translation_key === "compressor" && states[id].state === "on"
+            ? [{ s: "off", lu: a / 1000 }, { s: "on", lu: (now - 45 * 60000) / 1000 }] : [{ s: states[id].state, lu: a / 1000 }];
+        return out;
+      },
+    };
+    return;
+  }
   const dev = "dev1";
   const Q = new URLSearchParams(location.search), AIR = Q.get("source") === "air", PH = Q.get("phase");
   const R = {

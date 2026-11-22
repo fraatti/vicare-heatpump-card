@@ -1,10 +1,12 @@
 # ViCare Heat Pump Card
 
-A Home Assistant Lovelace card for Viessmann heat pumps connected through the built-in **ViCare** integration. It draws the refrigerant circuit the way the heat pump's own service display does, lets you scrub and play back the history, and shows the operating point in a **log p-h diagram** with an indicative health check.
+A Home Assistant Lovelace card for Viessmann heat pumps (ground and air source) connected through the built-in **ViCare** integration. It draws the refrigerant circuit the way the heat pump's own service display does, lets you scrub and play back the history, and shows the operating point in a **log p-h diagram** with an indicative health check.
 
 *Suomenkielinen ohje on alempana.*
 
-![Card](images/card.png)
+![Card: ground source heat pump](images/card.png)
+
+![Card: air source heat pump in hot water mode](images/air-source.png)
 
 ## Features
 
@@ -15,6 +17,7 @@ A Home Assistant Lovelace card for Viessmann heat pumps connected through the bu
 - **Speeds**: compressor % or rps, expansion valve opening, fan, brine and circulation pump speeds are shown when available, and the flow animations and pumps run faster or slower with them.
 - **Operating state**: heating, hot water, preparing, pause, defrost or off.
 - **Trends**: temperatures and pressures with a band for every run. Drag across the chart or use the slider to see the circuit at any moment, step a day back or forward, play the history (1, 2 or 5 min/s) or enlarge the charts to read every value at the cursor.
+- **Units without a high pressure sensor** (e.g. Vitocal 250-A, 252-A, 200-A, 222-S): the condensing temperature is estimated from the liquid line and the supply water and marked with ≈; the checks that depend on it are left out.
 - **log p-h diagram** with the cycle points, the source and supply temperature levels, a point table and a health check (superheat, subcooling, hot gas temperature, approaches, ΔT, lift tc − t0 against the controller's limit). Air source units are checked against outdoor air; defrost and cooling are not assessed, and the check waits for operation to settle after a defrost.
 - **Logbook** (optional): the heat pump's own event log, kept in a CSV file and shown in the card and on the timeline.
 - No entity IDs to set up: entities are found from the ViCare integration's own sensor keys. Finnish and English, light and dark themes, phone layout.
@@ -78,14 +81,14 @@ Copy the packages to `/config/packages` (`homeassistant: packages: !include_dir_
 
 ## Development
 
-`demo/index.html` shows the card with synthetic data (`demo/mock.js`) without Home Assistant; open it through any local web server.
+`demo/index.html` shows the card without Home Assistant. It has a synthetic Vitocal 333-G with a 24-hour history (`demo/mock.js`) and snapshots of real units from [PyViCare](https://github.com/openviess/PyViCare)'s test data (Apache-2.0): Vitocal 250-A, 252-A, 222-S, 200-A (two ViCare devices) and 333-G. `tools/make_demo_models.py` rebuilds `demo/models.js` from those files. Open the page directly or through any local web server; URL parameters: `model`, `lang`, `source`, `phase`, `buffer`, `mixer`, `circuit`, `heater`, `split`.
 
 ## Limitations
 
 - ViCare is cloud polled; values change every minute or two and short "unavailable" gaps are bridged.
 - History goes back as far as the recorder keeps it (10 days by default).
 - The health check limits are general guidance for ground and air source heat pumps, not manufacturer values, and it is no substitute for service.
-- Tested with a Vitocal 333-G (CU401B_G, R410A). Feedback from other models is welcome; please attach your ViCare diagnostics file to an issue.
+- Tested in use with a Vitocal 333-G (CU401B_G, R410A); air source models only with the API snapshots above. Feedback from other models is welcome; please attach your ViCare diagnostics file to an issue.
 
 Refrigerant properties were generated with [CoolProp](http://www.coolprop.org/).
 
@@ -103,6 +106,8 @@ Kortti näyttää Viessmann-lämpöpumpun kylmäainepiirin samaan tapaan kuin la
 **Käyttö**
 - Raahaa kuvaajaa tai liukusäädintä, niin kaavio näyttää valitun hetken. ‹ ja › vaihtavat päivää, ▶ toistaa historiaa, ⤢ suurentaa kuvaajat ja näyttää lukemat kohdistimen kohdalla, *Nyt* palaa nykyhetkeen.
 - *log p-h* avaa kiertoprosessin piirroksen ja arvion, kun kompressori on käynyt vähintään 10 minuuttia.
+
+**Mallit ilman korkeapaineanturia** (esim. Vitocal 250-A, 252-A, 200-A, 222-S): lauhtumislämpötila arvioidaan nestelinjan ja menoveden lämpötilasta ja merkitään ≈-merkillä; siitä riippuvat kohdat jätetään arviosta pois.
 
 **Ilma-vesilämpöpumppu.** Asetuksella `source: air` (tai automaattisesti, jos liuoksen paluuanturia ja liuospumppua ei ole) liuospiirin tilalle piirretään ulkoyksikkö, lamellipatteri, puhallin ja 4-tieventtiili. Sulatuksessa venttiili kääntää kierron: kuumakaasu menee ulkoyksikön patteriin, puhallin pysähtyy ja lämpö otetaan vedestä.
 
