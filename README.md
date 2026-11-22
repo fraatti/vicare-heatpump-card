@@ -21,7 +21,7 @@ A Home Assistant Lovelace card for Viessmann heat pumps (ground and air source) 
 - **log p-h diagram** with the cycle points, the source and supply temperature levels, a point table and a health check (superheat, subcooling, hot gas temperature, approaches, ΔT). Air source units are checked against outdoor air; defrost and cooling are not assessed, and the check waits for operation to settle after a defrost.
 - **Logbook** (optional): the heat pump's own event log, kept in a CSV file and shown in the card and on the timeline. Vitotronic 200 (WO1C) units (Vitocal 300-G, 333-G, older 200-S/222-S) have a real logbook. Newer units (Vitocal 250-A, 252-A, 200-A, 151-A, newer 222-S) have none; for them the script logs the status, info, service and fault messages (S.125 heating, S.128 defrost, S.115 valve to hot water …) as they appear, with the unit's own time stamps.
 - **Disabled sensors**: most refrigerant sensors of the ViCare integration are disabled by default. For an administrator the card lists the disabled ones it would use and enables them with one button.
-- No entity IDs to set up: entities are found from the ViCare integration's own sensor keys. Finnish and English, light and dark themes, phone layout.
+- No entity IDs to set up: entities are found from the ViCare integration's own sensor keys. English, Finnish, Swedish and German, light and dark themes, phone layout.
 
 <!-- ha-marketplace:exclude-start -->
 ## Installation
@@ -125,6 +125,32 @@ Kortti näyttää Viessmann-lämpöpumpun kylmäainepiirin samaan tapaan kuin la
 Split-mallin sisä- ja ulkoyksikkö näkyvät ViCaressa kahtena laitteena; kortti yhdistää niiden anturit itse, tai ulkoyksikön voi valita asetuksesta *Muut laitteet*.
 
 Arvion rajat ovat yleisiä ohjearvoja maa- ja ilmalämpöpumpuille, eivät valmistajan arvoja, eikä arvio korvaa huoltoa.
+
+## Svenska
+
+Kortet visar Viessmann-värmepumpens köldmediekrets på samma sätt som aggregatets egen servicedisplay. Dessutom visas golvvärme eller radiatorer, varmvattenberedare och köldbärarkrets (eller utedel), trender, uppspelning av historiken och ett log p-h-diagram med en vägledande bedömning av driften. Kortet använder den inbyggda ViCare-integrationens data och hittar givarna själv. Språket följer Home Assistants språkinställning.
+
+**Installation**
+1. Inställningar → *Marketplace* → *Add from link* → det här repositoriets adress (Home Assistant 2026.11 och senare; i äldre versioner HACS → ⋮ → *Custom repositories*, typ *Dashboard*). Eller kopiera `dist/vicare-heatpump-card.js` till `/config/www/` och lägg till resursen `/local/vicare-heatpump-card.js?v=1` (JavaScript-modul).
+2. Aktivera köldmediekretsens givare (hetgas, suggas, vätskeledning, underkylning, överhettning); de flesta är inaktiverade från början. Kortet listar de inaktiverade givarna och en administratör kan aktivera dem med knappen *Aktivera*. Givare som aggregatet saknar listas separat.
+3. Lägg till kortet från kortväljaren (*ViCare Heat Pump Card*).
+
+**Loggbok** (`examples/`): skriptet `vicare_logbook.py` sparar aggregatets loggbok, eller på nyare modeller dess status-, info-, service- och felmeddelanden. Lägg till `--lang sv` i kommandot för svenska texter.
+
+Bedömningens gränser är allmänna riktvärden för berg- och luftvärmepumpar, inte tillverkarens värden, och ersätter inte service.
+
+## Deutsch
+
+Die Karte zeigt den Kältekreis einer Viessmann-Wärmepumpe so wie das Servicedisplay des Geräts. Dazu kommen Fußbodenheizung oder Heizkörper, Warmwasserspeicher und Solekreis (oder Außeneinheit), Trends, Wiedergabe des Verlaufs und ein log p-h-Diagramm mit einer orientierenden Bewertung des Betriebs. Die Karte nutzt die Daten der integrierten ViCare-Integration und findet die Sensoren selbst. Die Sprache folgt der Spracheinstellung von Home Assistant.
+
+**Installation**
+1. Einstellungen → *Marketplace* → *Add from link* → Adresse dieses Repositorys (ab Home Assistant 2026.11; in älteren Versionen HACS → ⋮ → *Custom repositories*, Typ *Dashboard*). Oder `dist/vicare-heatpump-card.js` nach `/config/www/` kopieren und die Ressource `/local/vicare-heatpump-card.js?v=1` (JavaScript-Modul) hinzufügen.
+2. Die Sensoren des Kältekreises aktivieren (Heißgas, Sauggas, Flüssiggas, Unterkühlung, Überhitzung); die meisten sind standardmäßig deaktiviert. Die Karte listet die deaktivierten Sensoren auf, ein Administrator kann sie mit *Aktivieren* einschalten. Sensoren, die das Gerät nicht hat, werden getrennt aufgeführt.
+3. Die Karte über die Kartenauswahl hinzufügen (*ViCare Heat Pump Card*).
+
+**Logbuch** (`examples/`): Das Skript `vicare_logbook.py` speichert das Logbuch des Geräts bzw. bei neueren Modellen die Status-, Info-, Service- und Störungsmeldungen. Für deutsche Texte `--lang de` an den Befehl anhängen.
+
+Die Grenzwerte der Bewertung sind allgemeine Richtwerte für Sole/Wasser- und Luft/Wasser-Wärmepumpen, keine Herstellerwerte, und ersetzen keine Wartung.
 
 ## License
 

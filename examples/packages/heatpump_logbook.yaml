@@ -13,7 +13,7 @@
 #
 # API usage: 48 calls per day (the Basic plan allows about 1450).
 # Do not fetch more often than every 30 minutes.
-# Texts of the sensor and the CSV are English; add "--lang fi" to the command for Finnish.
+# Texts of the sensor and the CSV are English; add "--lang fi", "--lang sv" or "--lang de" to the command for Finnish, Swedish or German.
 
 command_line:
   - sensor:

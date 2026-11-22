@@ -17,7 +17,7 @@ The script finds out which one it is on the first run.
 One run = one API call (plus one installation lookup on the first run).
 The token is never printed or stored.
 
-Usage: python3 vicare_logbook.py [--lang en|fi]
+Usage: python3 vicare_logbook.py [--lang en|fi|sv|de]
 """
 import calendar, csv, json, os, sys, time, urllib.error, urllib.parse, urllib.request
 
@@ -49,8 +49,9 @@ REASONS = {  # API event name -> reason key (card and texts below)
 CIRCUIT_KEYS = {"Heizkreis": "heating", "Warmwasser": "dhw", "WW": "dhw"}
 ON, OFF = ("100", "1"), ("0",)
 
-# Language of the texts: --lang en (default) or --lang fi
-LANG = "fi" if "--lang" in sys.argv and sys.argv[sys.argv.index("--lang") + 1:][:1] == ["fi"] else "en"
+# Language of the texts: --lang en (default), fi, sv or de
+_LANG_ARG = sys.argv[sys.argv.index("--lang") + 1:][:1] if "--lang" in sys.argv else []
+LANG = _LANG_ARG[0] if _LANG_ARG and _LANG_ARG[0] in ("fi", "sv", "de") else "en"
 TEXT = {
     "en": {
         "start": "Compressor started", "stop": "Compressor stopped",
@@ -73,6 +74,28 @@ TEXT = {
         "heating": "lämmitys", "dhw": "käyttövesi",
         "names": {"VERDICHTER1": "Kompressori", "PRIMAERQUELLE1": "Liuospumppu", "WAERMEPUMPE1": "Lämpöpumppu"},
         "none": "ei tapahtumia",
+    },
+    "sv": {
+        "start": "Kompressor startade", "stop": "Kompressor stoppade",
+        "prep": "Köldbärarpump startade", "info": "Köldbärarpump stoppade",
+        "valve_on": "Växelventil till varmvatten", "valve_off": "Växelventil till värme",
+        "on_hyst": "tillslagshysteres nådd", "demand": "effektbegäran",
+        "off_hyst": "frånslagshysteres nådd", "temp_rise": "temperatur uppnådd",
+        "circuit_change": "byte av hydraulisk krets",
+        "heating": "värme", "dhw": "varmvatten",
+        "names": {"VERDICHTER1": "Kompressor", "PRIMAERQUELLE1": "Köldbärarpump", "WAERMEPUMPE1": "Värmepump"},
+        "none": "inga händelser",
+    },
+    "de": {
+        "start": "Verdichter ein", "stop": "Verdichter aus",
+        "prep": "Solepumpe ein", "info": "Solepumpe aus",
+        "valve_on": "Umschaltventil auf Warmwasser", "valve_off": "Umschaltventil auf Heizen",
+        "on_hyst": "Einschalthysterese erreicht", "demand": "Leistungsanforderung",
+        "off_hyst": "Ausschalthysterese erreicht", "temp_rise": "Temperatur erreicht",
+        "circuit_change": "Wechsel Hydraulikkreis",
+        "heating": "Heizen", "dhw": "Warmwasser",
+        "names": {"VERDICHTER1": "Verdichter", "PRIMAERQUELLE1": "Solepumpe", "WAERMEPUMPE1": "Wärmepumpe"},
+        "none": "keine Ereignisse",
     },
 }
 
@@ -119,6 +142,42 @@ MSG_TEXT = {
         "I.120": "Hiljainen käyttö päällä",
         "_status": "Tila", "_info": "Info", "_service": "Huoltoviesti", "_error": "Vika", "_warning": "Varoitus",
         "_cleared": "poistui",
+    },
+    "sv": {
+        "S.60": "Sommardrift aktiv (utetemperaturbaserad besparing)", "S.74": "Värme spärrad", "S.75": "VVC-pump i drift",
+        "S.115": "4/3-vägsventil till varmvatten", "S.116": "4/3-vägsventil till värme-/kylkrets 1", "S.117": "4/3-vägsventil till värme-/kylkrets 2",
+        "S.118": "4/3-vägsventil till intern buffert / bypass", "S.120": "Smart Grid: normal drift", "S.121": "Smart Grid: rekommenderad drift",
+        "S.122": "Smart Grid: tvångsdrift", "S.123": "Värmepump av", "S.124": "Värmepump förkörning", "S.125": "Värmepump värme",
+        "S.126": "Värmepump kyla", "S.127": "Värmepump förbereder avfrostning", "S.128": "Värmepump avfrostning", "S.129": "Värmepump efterkörning",
+        "S.130": "Elpatron av", "S.134": "4/3-vägsventil i viloläge", "S.135": "4/3-vägsventil i avfrostningsläge",
+        "S.136": "4/3-vägsventil till rumsvärme/-kyla", "S.161": "Påfyllning pågår", "S.162": "Avluftning pågår",
+        "S.163": "Värmepumpens systemstatus: inaktiv", "S.164": "Värmepumpens systemstatus: serviceberedskap",
+        "S.165": "Värmepumpens systemstatus: reglering", "S.167": "Test av ställdon pågår", "S.176": "Värmepumpsreglering: avfrostning begärd",
+        "S.186": "Frostskydd varmvattenberedare aktivt", "S.187": "Frostskydd värmepump aktivt",
+        "S.188": "Frostskydd ackumulatortank aktivt", "S.189": "Frostskydd intern buffert aktivt",
+        "S.1": "Spänning tillslagen", "S.217": "Elpatron fas 1 av", "S.218": "Elpatron fas 2 av",
+        "S.219": "Elpatron fas 3 av", "I.99": "Temperatur för legionellaskydd uppnådd", "I.114": "Normal drift",
+        "I.120": "Tyst drift på",
+        "_status": "Status", "_info": "Info", "_service": "Servicemeddelande", "_error": "Fel", "_warning": "Varning",
+        "_cleared": "upphört",
+    },
+    "de": {
+        "S.60": "Sommerbetrieb aktiv (Außentemperatur-Sparfunktion)", "S.74": "Heizbetrieb unterdrückt", "S.75": "Zirkulationspumpe aktiv",
+        "S.115": "4/3-Wege-Ventil Warmwasser", "S.116": "4/3-Wege-Ventil Heiz-/Kühlkreis 1", "S.117": "4/3-Wege-Ventil Heiz-/Kühlkreis 2",
+        "S.118": "4/3-Wege-Ventil interner Pufferspeicher / Bypass", "S.120": "Smart Grid: Normalbetrieb", "S.121": "Smart Grid: Einschaltempfehlung",
+        "S.122": "Smart Grid: Einschaltbefehl", "S.123": "Wärmepumpe Aus", "S.124": "Wärmepumpe Vorlauf", "S.125": "Wärmepumpe Heizen",
+        "S.126": "Wärmepumpe Kühlen", "S.127": "Wärmepumpe Abtauvorbereitung", "S.128": "Wärmepumpe Abtauen", "S.129": "Wärmepumpe Nachlauf",
+        "S.130": "Heizwasser-Durchlauferhitzer Aus", "S.134": "4/3-Wege-Ventil Ruhestellung", "S.135": "4/3-Wege-Ventil Abtaustellung",
+        "S.136": "4/3-Wege-Ventil Raumbeheizung/-kühlung", "S.161": "Befüllung aktiv", "S.162": "Entlüftung aktiv",
+        "S.163": "Systemstatus Wärmepumpe: inaktiv", "S.164": "Systemstatus Wärmepumpe: Wartungsbereitschaft",
+        "S.165": "Systemstatus Wärmepumpe: Regelung", "S.167": "Aktorentest aktiv", "S.176": "Wärmepumpenregelung: Abtauanforderung",
+        "S.186": "Frostschutz Warmwasserspeicher aktiv", "S.187": "Frostschutz Wärmepumpe aktiv",
+        "S.188": "Frostschutz Pufferspeicher aktiv", "S.189": "Frostschutz integrierter Pufferspeicher aktiv",
+        "S.1": "Netzspannung ein", "S.217": "Heizwasser-Durchlauferhitzer Phase 1 Aus", "S.218": "Heizwasser-Durchlauferhitzer Phase 2 Aus",
+        "S.219": "Heizwasser-Durchlauferhitzer Phase 3 Aus", "I.99": "Temperatur für Legionellenschutz erreicht", "I.114": "Normalbetrieb",
+        "I.120": "Geräuschreduzierter Betrieb aktiv",
+        "_status": "Status", "_info": "Info", "_service": "Servicemeldung", "_error": "Störung", "_warning": "Warnung",
+        "_cleared": "nicht mehr aktiv",
     },
 }
 MSG_PRIOS = ("status", "info", "service", "maintenance", "warning", "error")
