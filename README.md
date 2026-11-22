@@ -15,7 +15,7 @@ A Home Assistant Lovelace card for Viessmann heat pumps connected through the bu
 - **Speeds**: compressor % or rps, expansion valve opening, fan, brine and circulation pump speeds are shown when available, and the flow animations and pumps run faster or slower with them.
 - **Operating state**: heating, hot water, preparing, pause, defrost or off.
 - **Trends**: temperatures and pressures with a band for every run. Drag across the chart or use the slider to see the circuit at any moment, step a day back or forward, play the history (1, 2 or 5 min/s) or enlarge the charts to read every value at the cursor.
-- **log p-h diagram** with the cycle points, a point table and a health check (superheat, subcooling, hot gas temperature, approaches, ΔT, lift tc − t0 against the controller's limit).
+- **log p-h diagram** with the cycle points, the source and supply temperature levels, a point table and a health check (superheat, subcooling, hot gas temperature, approaches, ΔT, lift tc − t0 against the controller's limit). Air source units are checked against outdoor air; defrost and cooling are not assessed, and the check waits for operation to settle after a defrost.
 - **Logbook** (optional): the heat pump's own event log, kept in a CSV file and shown in the card and on the timeline.
 - No entity IDs to set up: entities are found from the ViCare integration's own sensor keys. Finnish and English, light and dark themes, phone layout.
 
@@ -44,6 +44,7 @@ max_lift: 62             # refrigerant controller limit for tc - t0 (Vitotronic 
 | Option | Default | Description |
 |---|---|---|
 | `device_id` | first ViCare heat pump | Device to show |
+| `extra_devices` | – | More ViCare devices whose sensors are used, e.g. the outdoor unit of a split system. Other heat pump devices of the same ViCare account are used automatically for sensors the main device lacks |
 | `title` | "Heat pump" | Card title |
 | `refrigerant` | `R410A` | Used for tc, t0 and the log p-h diagram; check the rating plate |
 | `hours` | `24` | Trend length |
@@ -83,7 +84,7 @@ Copy the packages to `/config/packages` (`homeassistant: packages: !include_dir_
 
 - ViCare is cloud polled; values change every minute or two and short "unavailable" gaps are bridged.
 - History goes back as far as the recorder keeps it (10 days by default).
-- The health check limits are general guidance for ground source heat pumps, not manufacturer values, and it is no substitute for service.
+- The health check limits are general guidance for ground and air source heat pumps, not manufacturer values, and it is no substitute for service.
 - Tested with a Vitocal 333-G (CU401B_G, R410A). Feedback from other models is welcome; please attach your ViCare diagnostics file to an issue.
 
 Refrigerant properties were generated with [CoolProp](http://www.coolprop.org/).
@@ -111,7 +112,9 @@ Kortti näyttää Viessmann-lämpöpumpun kylmäainepiirin samaan tapaan kuin la
 
 **Lisäosat** (`examples/`): tc/t0-anturit, käyttövesijaksojen nostokorkeus, viikkotilastot, tapahtumaloki ja valmis kojelauta. Entiteetti-ID:t ovat Vitocal 333-G:n; vaihda ne omaan laitteeseen sopiviksi.
 
-Arvion rajat ovat yleisiä ohjearvoja maalämpöpumpuille, eivät valmistajan arvoja, eikä arvio korvaa huoltoa.
+Split-mallin sisä- ja ulkoyksikkö näkyvät ViCaressa kahtena laitteena; kortti yhdistää niiden anturit itse, tai ulkoyksikön voi valita asetuksesta *Muut laitteet*.
+
+Arvion rajat ovat yleisiä ohjearvoja maa- ja ilmalämpöpumpuille, eivät valmistajan arvoja, eikä arvio korvaa huoltoa.
 
 ## License
 

@@ -46,11 +46,13 @@
   const v = force(at(now));
   for (const [tk, [d, u]] of Object.entries(R)) {
     const id = `${d}.cu401b_g_${tk}`;
-    entities[id] = { entity_id: id, platform: "vicare", translation_key: tk, device_id: dev };
+    // ?split=1: the refrigerant circuit belongs to a second device (outdoor unit) of the same account
+    const d2 = Q.get("split") === "1" && /^(hot_gas|suction_gas|liquid_gas|condenser|evaporator|compressor|primary)/.test(tk) ? "dev2" : dev;
+    entities[id] = { entity_id: id, platform: "vicare", translation_key: tk, device_id: d2 };
     states[id] = { entity_id: id, state: String(typeof v[tk] === "number" ? v[tk].toFixed(1) : v[tk]), attributes: { unit_of_measurement: u, friendly_name: tk }, last_changed: new Date(now).toISOString() };
   }
   window.mockHass = {
-    states, entities, devices: { [dev]: { id: dev, name: "CU401B G" } },
+    states, entities, devices: { [dev]: { id: dev, name: "CU401B G", config_entries: ["ce1"] }, dev2: { id: "dev2", name: "Outdoor unit", config_entries: ["ce1"] } },
     locale: { language: new URLSearchParams(location.search).get("lang") || "en", number_format: "language" }, language: new URLSearchParams(location.search).get("lang") || "en", config: { time_zone: "Europe/Helsinki" },
     themes: { darkMode: false },
     callWS: async (msg) => {

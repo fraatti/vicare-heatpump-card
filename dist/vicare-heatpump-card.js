@@ -4,7 +4,7 @@
  * indicative health check for Viessmann heat pumps using the built-in ViCare
  * integration. MIT License.
  */
-const VHP_VERSION = "0.16.0";
+const VHP_VERSION = "0.17.0";
 
 /* Refrigerant tables generated with CoolProp (IIR reference state).
  * sat: [T °C, p_bubble bar(a), p_dew bar(a), h_liquid kJ/kg, h_vapour kJ/kg]
@@ -99,6 +99,11 @@ const VHP_I18N = {
     no_run: "Kompressori ei käy, eikä historiasta löytynyt vähintään {s} minuutin ajoa.",
     settling: "Kompressori käynnistyi {m} min sitten. Arvio tehdään, kun käynti on vakiintunut ({s} min).",
     no_ph: "Korkea- tai matalapaine puuttuu, joten piirrosta ei voi muodostaa.",
+    disclaimer_air: "Ohjeelliset rajat ilma-vesilämpöpumpulle. ViCare päivittää arvot eri hetkinä, joten yksittäinen lukema voi olla muutaman minuutin vanha. Arvio ei korvaa huoltoa.",
+    reversed_note: "Kierto on käännetty ({mode}): ulkoyksikön patteri lauhduttaa ja sisäyksikön lämmönsiirrin höyrystää. Arvio tehdään vain lämmitykselle ja käyttövedelle.",
+    after_defrost: "Sulatus päättyi {m} min sitten. Arvio tehdään, kun käynti on taas vakiintunut ({s} min).",
+    ph_source: "Lähde",
+    ph_sink: "Meno",
     disclaimer: "Ohjeelliset rajat maalämpöpumpulle. ViCare päivittää arvot eri hetkinä, joten yksittäinen lukema voi olla muutaman minuutin vanha. Arvio ei korvaa huoltoa.",
     all_ok: "Kaikki arvioidut arvot ovat ohjealueella.",
     point: "Piste",
@@ -115,6 +120,7 @@ const VHP_I18N = {
       discharge: "Kuumakaasun lämpötila",
       discharge_sh: "Kuumakaasun tulistus",
       evap_approach: "Höyrystimen lämpötilaero",
+      air_approach: "Ulkoilma − höyrystyminen",
       cond_approach: "Lauhduttimen lämpötilaero",
       brine_dt: "Keruupiirin ΔT",
       water_dt: "Lämmityspiirin ΔT",
@@ -132,6 +138,7 @@ const VHP_I18N = {
       discharge_high: "Korkea kuumakaasun lämpötila kuormittaa kompressoria.",
       discharge_sh_low: "Pieni kuumakaasun tulistus: mahdollinen märkä puristus.",
       lift_high: "Lähellä kylmäainepiirin säätimen rajaa ({max} K, parametri 5080). Rajalla säädin pysäyttää kompressorin ja kirjaa ohjeen (Kylmäainepiiri 07, koodi 31). Huolto-ohjeen toimenpide: laske menoveden lämpötilaa, esim. käyttöveden tavoitetta tai lämpökäyrää.",
+      air_approach_high: "Suuri ero ulkoilman ja höyrystymisen välillä: patteri voi olla jäätynyt tai likainen, tai ilmavirta on pieni (puhallin, lumi, lehdet).",
       evap_approach_high: "Suuri ero keruuliuoksen ja höyrystymisen välillä: keruupiirin virtaus voi olla pieni tai höyrystin likainen.",
       cond_approach_high: "Suuri ero lauhtumisen ja menoveden välillä: lämmityspuolen virtaus voi olla pieni tai lauhdutin likainen.",
       brine_dt_high: "Suuri keruupiirin ΔT: virtaus voi olla pieni (ilma, suodatin, pumppu).",
@@ -147,6 +154,7 @@ const VHP_I18N = {
     no_device: "ViCare-lämpöpumppua ei löytynyt. Valitse laite kortin asetuksista.",
     cfg: {
       device_id: "ViCare-laite",
+      extra_devices: "Muut laitteet (split-mallin ulkoyksikkö)",
       title: "Otsikko",
       refrigerant: "Kylmäaine",
       hours: "Historian pituus",
@@ -262,6 +270,11 @@ const VHP_I18N = {
     no_run: "The compressor is not running and no run of at least {s} minutes was found in the history.",
     settling: "The compressor started {m} min ago. The assessment is made once operation has settled ({s} min).",
     no_ph: "High or low pressure is missing, so the diagram cannot be drawn.",
+    disclaimer_air: "Indicative limits for an air source heat pump. ViCare updates values at different moments, so a single reading may be a few minutes old. This is not a substitute for service.",
+    reversed_note: "The cycle is reversed ({mode}): the outdoor coil condenses and the indoor heat exchanger evaporates. The assessment is made for heating and hot water only.",
+    after_defrost: "Defrost ended {m} min ago. The assessment is made once operation has settled again ({s} min).",
+    ph_source: "Source",
+    ph_sink: "Supply",
     disclaimer: "Indicative limits for a ground source heat pump. ViCare updates values at different moments, so a single reading may be a few minutes old. This is not a substitute for service.",
     all_ok: "All assessed values are within the guide ranges.",
     point: "Point",
@@ -278,6 +291,7 @@ const VHP_I18N = {
       discharge: "Hot gas temperature",
       discharge_sh: "Hot gas superheat",
       evap_approach: "Evaporator approach",
+      air_approach: "Outdoor air − evaporation",
       cond_approach: "Condenser approach",
       brine_dt: "Brine ΔT",
       water_dt: "Heating water ΔT",
@@ -295,6 +309,7 @@ const VHP_I18N = {
       discharge_high: "High hot gas temperature stresses the compressor.",
       discharge_sh_low: "Low hot gas superheat: possible wet compression.",
       lift_high: "Close to the refrigerant controller limit ({max} K, parameter 5080). At the limit the controller stops the compressor and logs a note (refrigerant circuit 07, code 31). Service manual measure: lower the flow temperature, e.g. the DHW set temperature or heating curve.",
+      air_approach_high: "Large difference between outdoor air and evaporation: the coil may be iced or dirty, or the airflow is low (fan, snow, leaves).",
       evap_approach_high: "Large difference between brine and evaporation: low brine flow or a fouled evaporator.",
       cond_approach_high: "Large difference between condensation and supply water: low water flow or a fouled condenser.",
       brine_dt_high: "High brine ΔT: flow may be low (air, filter, pump).",
@@ -310,6 +325,7 @@ const VHP_I18N = {
     no_device: "No ViCare heat pump found. Select the device in the card settings.",
     cfg: {
       device_id: "ViCare device",
+      extra_devices: "Other devices (outdoor unit of a split system)",
       title: "Title",
       refrigerant: "Refrigerant",
       hours: "History length",
@@ -563,6 +579,7 @@ class VicareHeatpumpCard extends HTMLElement {
     return {
       schema: [
         { name: "device_id", selector: { device: { filter: { integration: "vicare" } } } },
+        { name: "extra_devices", selector: { device: { multiple: true, filter: { integration: "vicare" } } } },
         { name: "title", selector: { text: {} } },
         {
           type: "grid",
@@ -778,23 +795,43 @@ class VicareHeatpumpCard extends HTMLElement {
       dev = e?.device_id;
     }
     this._device = dev;
-    const byKey = {};
-    for (const e of ents) {
-      if (!e.translation_key || (dev && e.device_id !== dev)) continue;
-      if (e.platform && e.platform !== "vicare") continue;
-      const dom = e.entity_id.split(".")[0];
-      (byKey[dom + ":" + e.translation_key] ||= []).push(e.entity_id);
-    }
-    const roles = {};
-    for (const [role, def] of Object.entries(VHP_ROLES)) {
-      for (const k of def.k) {
-        const list = byKey[def.d + ":" + k];
-        if (list && list.length) {
-          roles[role] = list.slice().sort((a, b) => a.length - b.length || a.localeCompare(b))[0];
-          break;
+    const keysOf = (d) => {
+      const byKey = {};
+      for (const e of ents) {
+        if (!e.translation_key || (d && e.device_id !== d)) continue;
+        if (e.platform && e.platform !== "vicare") continue;
+        const dom = e.entity_id.split(".")[0];
+        (byKey[dom + ":" + e.translation_key] ||= []).push(e.entity_id);
+      }
+      return byKey;
+    };
+    const fill = (roles, byKey) => {
+      for (const [role, def] of Object.entries(VHP_ROLES)) {
+        if (roles[role]) continue;
+        for (const k of def.k) {
+          const list = byKey[def.d + ":" + k];
+          if (list && list.length) {
+            roles[role] = list.slice().sort((a, b) => a.length - b.length || a.localeCompare(b))[0];
+            break;
+          }
         }
       }
-    }
+    };
+    const roles = {};
+    fill(roles, keysOf(dev));
+    // Split units appear as two ViCare devices (indoor and outdoor unit). Missing roles are taken from
+    // the other heat pump devices of the same ViCare account, or from the devices listed in extra_devices.
+    if (dev) {
+      const ce = hass.devices?.[dev]?.config_entries || [];
+      const hpKey = /^(compressor_|hot_gas_|suction_gas_|liquid_gas_|evaporator_|condenser_|primary_circuit_|secondary_circuit_)/;
+      const others = new Set([].concat(this._config.extra_devices || []).filter(Boolean));
+      if (ce.length)
+        for (const e of ents)
+          if (e.platform === "vicare" && e.device_id && e.device_id !== dev && hpKey.test(e.translation_key || "") &&
+            (hass.devices?.[e.device_id]?.config_entries || []).some((c) => ce.includes(c))) others.add(e.device_id);
+      this._devices = [dev, ...others];
+      for (const d of others) fill(roles, keysOf(d));
+    } else this._devices = [];
     for (const [role, eid] of Object.entries(this._config.entities || {})) if (eid) roles[role] = eid;
     if (roles.circ_supply && roles.circ_supply === roles.sec_supply) delete roles.circ_supply;
     this._roles = roles;
@@ -2108,7 +2145,8 @@ class VicareHeatpumpCard extends HTMLElement {
     if (!isFinite(sc)) sc = cy.tcB - cy.T3;
     st = range(sc, 2, 10, 0.5, 14);
     add("subcooling", sc, "K", st, st && st !== "ok" ? (sc < 2 ? i.msg.subcooling_low : i.msg.subcooling_high) : "");
-    const dLim = dhw ? [115, 125] : [90, 105];
+    // air source units run at a larger lift in cold weather, R32 runs hotter than R410A
+    const dLim = (dhw ? [115, 125] : this._air ? [100, 115] : [90, 105]).map((v) => v + (this._config.refrigerant === "R32" ? 5 : 0));
     st = !isFinite(cy.T2) ? null : cy.T2 <= dLim[0] ? "ok" : cy.T2 <= dLim[1] ? "warn" : "bad";
     add("discharge", cy.T2, "°C", st, st && st !== "ok" ? i.msg.discharge_high : "");
     const dsh = cy.T2 - cy.tc;
@@ -2121,6 +2159,14 @@ class VicareHeatpumpCard extends HTMLElement {
       const bdt = this._val("pri_supply", t) - this._val("pri_return", t);
       st = range(bdt, 1.5, 5, 1, 6);
       add("brine_dt", bdt, "K", st, st && st !== "ok" ? (bdt < 1.5 ? i.msg.brine_dt_low : i.msg.brine_dt_high) : "");
+    }
+    if (this._air) {
+      // outdoor air (intake sensor, else the outdoor temperature) against the evaporating temperature
+      let ta = this._val("pri_supply", t);
+      if (!isFinite(ta)) ta = this._val("outside", t);
+      const aa = ta - cy.t0;
+      st = !isFinite(aa) ? null : aa <= 12 ? "ok" : aa <= 16 ? "warn" : "bad";
+      add("air_approach", aa, "K", st, st && st !== "ok" ? i.msg.air_approach_high : "");
     }
     const ca = cy.tcM - this._val("sec_supply", t);
     st = !isFinite(ca) ? null : ca <= 5 ? "ok" : ca <= 8 ? "warn" : "bad";
@@ -2241,9 +2287,22 @@ class VicareHeatpumpCard extends HTMLElement {
       const dx = k === 1 || k === 0 ? 8 : -8, dy = k < 2 ? (k === 1 ? -6 : 14) : k === 2 ? -6 : 14;
       cyc += `<circle cx="${X(h).toFixed(1)}" cy="${Y(p).toFixed(1)}" r="4" class="pt"/><text x="${(X(h) + dx).toFixed(1)}" y="${(Y(p) + dy).toFixed(1)}" text-anchor="${dx > 0 ? "start" : "end"}" class="ptl">${k + 1}</text>`;
     });
+    // Source (outdoor air or brine) and sink (supply water) as saturation pressure levels: the gaps to
+    // the evaporating and condensing lines are the approaches of the two heat exchangers.
+    let lv = "";
+    const pAt = (T) => VhpThermo.interp(d.sat.map((r) => r[0]), d.sat.map((r) => r[2]), T);
+    let tSrc = this._val(this._air ? "pri_supply" : "pri_return", at), srcName = this._air ? i.air_in : i.ph_source;
+    if (!isFinite(tSrc)) { tSrc = this._val(this._air ? "outside" : "pri_supply", at); srcName = this._air ? i.outdoor_air : i.ph_source; }
+    const tSink = this._val("sec_supply", at);
+    for (const [T, cls, name] of [[tSrc, "src", srcName], [tSink, "snk", i.ph_sink]]) {
+      const p = pAt(T);
+      if (!isFinite(p) || p < pMin || p > pMax) continue;
+      const y = Y(p).toFixed(1);
+      lv += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y}" y2="${y}" class="lvl ${cls}"/><text x="${W - pad.r - 2}" y="${(+y + (cls === "src" ? 12 : -4)).toFixed(1)}" text-anchor="end" class="lvll ${cls}">${name} ${this._fmt(T)} °C</text>`;
+    }
     const svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${i.ph_title}">
       <defs><marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6"/></marker></defs>
-      ${g}${iso}${dome}${cyc}</svg>`;
+      ${g}${iso}${dome}${lv}${cyc}</svg>`;
     // point table
     const f1 = (v, d = 1) => this._fmt(v, d);
     const rows = [
@@ -2258,7 +2317,10 @@ class VicareHeatpumpCard extends HTMLElement {
     // assessment
     const mode = this._mode(at);
     let ass = past ? `<div class="note">${i.not_running}</div>` : "";
-    if (!past && run < steadyMin) ass = `<div class="note">${i.settling.replace("{m}", Math.max(0, Math.floor(run))).replace("{s}", steadyMin)}</div>`;
+    const sinceDef = this._minutesSinceDefrost(at);
+    if (this._air && (mode === "defrost" || mode === "cooling")) ass += `<div class="note">${i.reversed_note.replace("{mode}", (i.mode[mode] || mode).toLowerCase())}</div>`;
+    else if (!past && run < steadyMin) ass = `<div class="note">${i.settling.replace("{m}", Math.max(0, Math.floor(run))).replace("{s}", steadyMin)}</div>`;
+    else if (sinceDef !== null && sinceDef < steadyMin) ass += `<div class="note">${i.after_defrost.replace("{m}", Math.max(0, Math.floor(sinceDef))).replace("{s}", steadyMin)}</div>`;
     else {
       const res = this._assess(cy, mode, at);
       const bad = res.filter((r) => r.status === "warn" || r.status === "bad");
@@ -2273,7 +2335,19 @@ class VicareHeatpumpCard extends HTMLElement {
     }
     const when = past ? ` · <span class="pastrun">${i.last_run} ${this._fmtTime(at)}</span>` : "";
     box.innerHTML = `<div class="phhead">${i.ph_title} · ${this._config.refrigerant} · <span class="m" style="--mc:${VHP_MODE_COLORS[mode] === "transparent" ? "var(--secondary-text-color)" : VHP_MODE_COLORS[mode]}">${i.mode[mode]}</span>${when}</div>
-      <div class="phchart">${svg}</div><div class="phbody"><div class="phtab">${table}</div><div class="phass"><h4>${i.assessment}</h4>${ass}</div></div><div class="disc">${i.disclaimer}</div>`;
+      <div class="phchart">${svg}</div><div class="phbody"><div class="phtab">${table}</div><div class="phass"><h4>${i.assessment}</h4>${ass}</div></div><div class="disc">${this._air ? i.disclaimer_air : i.disclaimer}</div>`;
+  }
+
+  /* Minutes since the last defrost (any defrost phase) ended before t, or null if none in the history. */
+  _minutesSinceDefrost(t) {
+    const h = this._hist?.[this._roles.phase];
+    if (!h) return null;
+    const now = t ?? Date.now();
+    const k0 = this._idx(h, now);
+    if (k0 < 0) return null;
+    if (String(h.v[k0]).includes("defrost")) return 0;
+    for (let k = k0; k > 0; k--) if (String(h.v[k - 1]).includes("defrost")) return (now - h.t[k]) / 60000;
+    return null;
   }
 }
 
@@ -2548,6 +2622,8 @@ ul.logl li.other .lbx { color: var(--error-color, #db4437); font-weight: 500; }
 .dome { fill: none; stroke: var(--primary-text-color); stroke-width: 1.6; }
 .iso { fill: none; stroke: var(--secondary-text-color); stroke-width: .8; opacity: .45; }
 .isol { font-size: 10.5px; fill: var(--secondary-text-color); opacity: .8; }
+.lvl { stroke-width: 1.2; stroke-dasharray: 5 4; opacity: .8; } .lvl.src { stroke: var(--vhp-cold); } .lvl.snk { stroke: var(--vhp-hot); }
+.lvll { font-size: 10.5px; font-weight: 500; } .lvll.src { fill: var(--vhp-cold); } .lvll.snk { fill: var(--vhp-hot); }
 .cy { stroke-width: 2.4; } .cy.hot { stroke: var(--vhp-hot); } .cy.warm { stroke: var(--vhp-warm); } .cy.cold { stroke: var(--vhp-cold); }
 .pt { fill: var(--card-background-color, #fff); stroke: var(--primary-text-color); stroke-width: 1.5; }
 .ptl { font-size: 12px; font-weight: 600; fill: var(--primary-text-color); }
