@@ -23,9 +23,15 @@ A Home Assistant Lovelace card for Viessmann heat pumps (ground and air source) 
 - **Disabled sensors**: most refrigerant sensors of the ViCare integration are disabled by default. For an administrator the card lists the disabled ones it would use and enables them with one button.
 - No entity IDs to set up: entities are found from the ViCare integration's own sensor keys. Finnish and English, light and dark themes, phone layout.
 
+<!-- ha-marketplace:exclude-start -->
 ## Installation
 
-### HACS (custom repository)
+### Marketplace (Home Assistant 2026.11 and newer)
+
+1. Settings → **Marketplace** → *Add from link* → this repository's URL (`https://github.com/fraatti/vicare-heatpump-card`). Adding a repository by link asks you to connect GitHub once.
+2. Open **ViCare Heat Pump Card**, choose *Install* and reload the browser. Updates appear like any other update.
+
+### HACS (Home Assistant before 2026.11)
 
 1. HACS → ⋮ → *Custom repositories* → add this repository's URL, type **Dashboard**.
 2. Install **ViCare Heat Pump Card** and reload the browser.
@@ -35,6 +41,7 @@ A Home Assistant Lovelace card for Viessmann heat pumps (ground and air source) 
 1. Copy `dist/vicare-heatpump-card.js` to `/config/www/vicare-heatpump-card.js`.
 2. Settings → Dashboards → ⋮ → *Resources* → *Add resource*: URL `/local/vicare-heatpump-card.js?v=1`, type *JavaScript module*. Raise the `v` number after every update.
 3. Reload the browser.
+<!-- ha-marketplace:exclude-end -->
 
 ## Configuration
 
@@ -98,7 +105,7 @@ Refrigerant properties were generated with [CoolProp](http://www.coolprop.org/).
 Kortti näyttää Viessmann-lämpöpumpun kylmäainepiirin samaan tapaan kuin laitteen oma huoltonäyttö. Siinä on lisäksi lattialämmitys, käyttövesivaraaja ja liuospiiri, trendit, historian kelaus ja toisto sekä log p-h -piirros, jossa on suuntaa antava arvio toiminnasta. Kortti käyttää ViCare-integraation omia tietoja ja tunnistaa anturit itse.
 
 **Asennus**
-1. HACS → ⋮ → *Custom repositories* → tämän repositorion osoite, tyyppi *Dashboard*. Tai kopioi `dist/vicare-heatpump-card.js` kansioon `/config/www/` ja lisää resurssi `/local/vicare-heatpump-card.js?v=1` (JavaScript-moduuli).
+1. Asetukset → *Marketplace* → *Add from link* → tämän repositorion osoite (Home Assistant 2026.11 alkaen; vanhemmissa HACS → ⋮ → *Custom repositories*, tyyppi *Dashboard*). Tai kopioi `dist/vicare-heatpump-card.js` kansioon `/config/www/` ja lisää resurssi `/local/vicare-heatpump-card.js?v=1` (JavaScript-moduuli).
 2. Ota käyttöön kylmäainepiirin anturit (kuumakaasu, imukaasu, nestelinja, alijäähdytys, tulistus). Kortti luettelee käytöstä poistetut anturit, ja ylläpitäjä voi ottaa ne käyttöön kortin *Ota käyttöön* -napista. Laitteelta puuttuvat anturit kortti listaa erikseen.
 3. Lisää kortti kortinvalitsimesta (*ViCare Heat Pump Card*).
 
