@@ -77,7 +77,8 @@ TEXT = {
 }
 
 
-# Messages of the newer units. Status texts from the Vitocal 250-A(H) service manual (Statusmeldungen).
+# Messages of the newer units. Status texts from the Vitocal 250-A(H) service manual (Statusmeldungen);
+# the rest in English from vicare_codes.json.
 # (kind for the card's timeline, circuit, valve direction)
 MSG_KIND = {
     "S.123": ("stop", None, None), "S.124": ("prep", None, None), "S.125": ("start", "heating", None),
@@ -113,11 +114,33 @@ MSG_TEXT = {
         "S.165": "Lämpöpumpun järjestelmätila: säätö", "S.167": "Toimilaitetesti käynnissä", "S.176": "Lämpöpumpun säätö: sulatusta pyydetty",
         "S.186": "Käyttövesivaraajan jäätymissuojaus", "S.187": "Lämpöpumpun jäätymissuojaus",
         "S.188": "Puskurivaraajan jäätymissuojaus", "S.189": "Sisäisen puskurin jäätymissuojaus",
+        "S.1": "Virta kytketty", "S.217": "Sähkövastuksen vaihe 1 pois", "S.218": "Sähkövastuksen vaihe 2 pois",
+        "S.219": "Sähkövastuksen vaihe 3 pois", "I.99": "Legionellasuojauksen lämpötila saavutettu", "I.114": "Normaali käyttö",
+        "I.120": "Hiljainen käyttö päällä",
         "_status": "Tila", "_info": "Info", "_service": "Huoltoviesti", "_error": "Vika", "_warning": "Varoitus",
         "_cleared": "poistui",
     },
 }
 MSG_PRIOS = ("status", "info", "service", "maintenance", "warning", "error")
+# All other codes: English texts from vicare_codes.json (open3e, Apache-2.0), next to this script or in /config.
+PREFIX_CAT = {"S": "status", "I": "info", "F": "error", "A": "warning", "P": "service"}
+_CODES = None
+
+
+def code_text(code, prio):
+    global _CODES
+    if _CODES is None:
+        _CODES = {}
+        for d in (os.path.dirname(os.path.abspath(__file__)), CFG):
+            try:
+                with open(os.path.join(d, "vicare_codes.json"), encoding="utf-8") as f:
+                    _CODES = json.load(f)
+                break
+            except (OSError, ValueError):
+                pass
+    letter, _, num = code.partition(".")
+    cat = {"maintenance": "service"}.get(prio, prio) if prio in ("status", "info", "error", "warning", "service", "maintenance") else PREFIX_CAT.get(letter)
+    return (_CODES.get(cat) or {}).get(num.lstrip("0") or "0")
 IMPORTANT_PRIOS = ("service", "maintenance", "warning", "error")
 
 
@@ -129,9 +152,8 @@ def msg_interpret(r, lang=None):
     """(kind, text, circuit, valve direction) for a message row."""
     T = MSG_TEXT[lang or LANG]
     code, prio, on = r["event"], r["actor"], r["status"] == "1"
-    text = T.get(code) or f"{T.get('_' + prio, prio)} {code}"
-    if code in T:
-        text = f"{code} {text}"
+    known = T.get(code) or code_text(code, prio)
+    text = f"{code} {known}" if known else f"{T.get('_' + prio, prio)} {code}"
     if not on:
         return "info", f"{text} ({T['_cleared']})", None, None
     if prio in IMPORTANT_PRIOS:
