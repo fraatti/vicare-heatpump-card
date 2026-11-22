@@ -4,7 +4,7 @@
  * indicative health check for Viessmann heat pumps using the built-in ViCare
  * integration. MIT License.
  */
-const VHP_VERSION = "1.6.0";
+const VHP_VERSION = "1.7.0";
 
 /* Refrigerant tables generated with CoolProp (IIR reference state).
  * sat: [T °C, p_bubble bar(a), p_dew bar(a), h_liquid kJ/kg, h_vapour kJ/kg]
@@ -105,6 +105,7 @@ const VHP_I18N = {
     no_ph: "Korkea- tai matalapaine puuttuu, joten piirrosta ei voi muodostaa.",
     disclaimer_air: "Ohjeelliset rajat ilma-vesilämpöpumpulle. ViCare päivittää arvot eri hetkinä, joten yksittäinen lukema voi olla muutaman minuutin vanha. Arvio ei korvaa huoltoa.",
     est_high: "Korkeapainetta ei mitata. Lauhtumislämpötila (≈) on arvioitu nestelinjan ja menoveden lämpötilasta, joten siitä riippuvat kohdat jätetään arviosta pois.",
+    sf: { hp: "Korkeapaineanturin lukema on epäuskottava: {why}. Tarkista anturi ja sen liitin.", lp: "Matalapaineanturin lukema on epäuskottava: {why}. Tarkista anturi ja sen liitin.", hp_skip: "Lauhtumislämpötila ja alijäähdytys lasketaan tästä paineesta, joten niistä riippuvat kohdat jätetään arviosta pois.", lp_skip: "Höyrystymislämpötila ja tulistus lasketaan tästä paineesta, joten niistä riippuvat kohdat jätetään arviosta pois.", hp_below_supply: "lauhtumislämpötila {a} on alle lämmityksen menoveden {b}", hp_below_liquid: "lauhtumislämpötila {a} on alle nestelinjan {b}", hp_above_hot: "lauhtumislämpötila {a} on yli kuumakaasun {b}", lp_above_brine: "höyrystymislämpötila {a} on yli tulevan liuoksen {b}", lp_above_air: "höyrystymislämpötila {a} on yli ulkoilman {b}", lp_above_suction: "höyrystymislämpötila {a} on yli imukaasun {b}" },
     reversed_note: "Kierto on käännetty ({mode}): ulkoyksikön patteri lauhduttaa ja sisäyksikön lämmönsiirrin höyrystää. Arvio tehdään vain lämmitykselle ja käyttövedelle.",
     after_defrost: "Sulatus päättyi {m} min sitten. Arvio tehdään, kun käynti on taas vakiintunut ({s} min).",
     ph_source: "Lähde",
@@ -292,6 +293,7 @@ const VHP_I18N = {
     no_ph: "High or low pressure is missing, so the diagram cannot be drawn.",
     disclaimer_air: "Indicative limits for an air source heat pump. ViCare updates values at different moments, so a single reading may be a few minutes old. This is not a substitute for service.",
     est_high: "The high pressure is not measured. The condensing temperature (≈) is estimated from the liquid line and the supply water, so the checks that depend on it are left out.",
+    sf: { hp: "The high pressure sensor reading is implausible: {why}. Check the sensor and its connector.", lp: "The low pressure sensor reading is implausible: {why}. Check the sensor and its connector.", hp_skip: "The condensing temperature and the subcooling are calculated from this pressure, so the checks that depend on them are left out.", lp_skip: "The evaporating temperature and the superheat are calculated from this pressure, so the checks that depend on them are left out.", hp_below_supply: "the condensing temperature {a} is below the heating supply water {b}", hp_below_liquid: "the condensing temperature {a} is below the liquid line {b}", hp_above_hot: "the condensing temperature {a} is above the hot gas {b}", lp_above_brine: "the evaporating temperature {a} is above the incoming brine {b}", lp_above_air: "the evaporating temperature {a} is above the outdoor air {b}", lp_above_suction: "the evaporating temperature {a} is above the suction gas {b}" },
     reversed_note: "The cycle is reversed ({mode}): the outdoor coil condenses and the indoor heat exchanger evaporates. The assessment is made for heating and hot water only.",
     after_defrost: "Defrost ended {m} min ago. The assessment is made once operation has settled again ({s} min).",
     ph_source: "Source",
@@ -482,6 +484,7 @@ const VHP_I18N_SV = {
     no_ph: "Hög- eller lågtryck saknas, så diagrammet kan inte ritas.",
     disclaimer_air: "Riktvärden för en luft/vatten-värmepump. ViCare uppdaterar värdena vid olika tidpunkter, så ett enskilt värde kan vara några minuter gammalt. Ersätter inte service.",
     est_high: "Högtrycket mäts inte. Kondenseringstemperaturen (≈) är uppskattad från vätskeledningen och framledningsvattnet, så kontrollerna som beror på den utelämnas.",
+    sf: { hp: "Högtrycksgivarens värde är orimligt: {why}. Kontrollera givaren och dess kontakt.", lp: "Lågtrycksgivarens värde är orimligt: {why}. Kontrollera givaren och dess kontakt.", hp_skip: "Kondenseringstemperaturen och underkylningen beräknas från detta tryck, så kontrollerna som beror på dem utelämnas.", lp_skip: "Förångningstemperaturen och överhettningen beräknas från detta tryck, så kontrollerna som beror på dem utelämnas.", hp_below_supply: "kondenseringstemperaturen {a} är lägre än värmens framledning {b}", hp_below_liquid: "kondenseringstemperaturen {a} är lägre än vätskeledningen {b}", hp_above_hot: "kondenseringstemperaturen {a} är högre än hetgasen {b}", lp_above_brine: "förångningstemperaturen {a} är högre än inkommande köldbärare {b}", lp_above_air: "förångningstemperaturen {a} är högre än uteluften {b}", lp_above_suction: "förångningstemperaturen {a} är högre än suggasen {b}" },
     reversed_note: "Cykeln är omkastad ({mode}): utedelens lamellbatteri kondenserar och värmeväxlaren inomhus förångar. Bedömningen görs endast för värme och varmvatten.",
     after_defrost: "Avfrostningen slutade för {m} min sedan. Bedömningen görs när driften har stabiliserats igen ({s} min).",
     ph_source: "Källa",
@@ -669,6 +672,7 @@ const VHP_I18N_DE = {
     no_ph: "Hoch- oder Niederdruck fehlt, daher kann das Diagramm nicht gezeichnet werden.",
     disclaimer_air: "Richtwerte für eine Luft/Wasser-Wärmepumpe. ViCare aktualisiert die Werte zu unterschiedlichen Zeitpunkten, ein einzelner Wert kann daher einige Minuten alt sein. Kein Ersatz für eine Wartung.",
     est_high: "Der Hochdruck wird nicht gemessen. Die Kondensationstemperatur (≈) ist aus Flüssiggas- und Vorlauftemperatur geschätzt, daher entfallen die davon abhängigen Prüfungen.",
+    sf: { hp: "Der Wert des Hochdrucksensors ist unplausibel: {why}. Sensor und Steckverbindung prüfen.", lp: "Der Wert des Niederdrucksensors ist unplausibel: {why}. Sensor und Steckverbindung prüfen.", hp_skip: "Kondensationstemperatur und Unterkühlung werden aus diesem Druck berechnet, daher entfallen die davon abhängigen Prüfungen.", lp_skip: "Verdampfungstemperatur und Überhitzung werden aus diesem Druck berechnet, daher entfallen die davon abhängigen Prüfungen.", hp_below_supply: "Kondensationstemperatur {a} liegt unter dem Heizungsvorlauf {b}", hp_below_liquid: "Kondensationstemperatur {a} liegt unter der Flüssigkeitsleitung {b}", hp_above_hot: "Kondensationstemperatur {a} liegt über dem Heißgas {b}", lp_above_brine: "Verdampfungstemperatur {a} liegt über dem Soleeintritt {b}", lp_above_air: "Verdampfungstemperatur {a} liegt über der Außenluft {b}", lp_above_suction: "Verdampfungstemperatur {a} liegt über dem Sauggas {b}" },
     reversed_note: "Der Kreisprozess ist umgekehrt ({mode}): Der Lamellenwärmetauscher der Außeneinheit verflüssigt, der Wärmetauscher innen verdampft. Bewertet werden nur Heizen und Warmwasser.",
     after_defrost: "Abtauung vor {m} min beendet. Die Bewertung erfolgt, sobald der Betrieb wieder eingeschwungen ist ({s} min).",
     ph_source: "Quelle",
@@ -1619,6 +1623,7 @@ class VicareHeatpumpCard extends HTMLElement {
           <div class="diagram" id="diagram">${this._diagramSvg()}</div>
           <div class="ph" id="ph" hidden></div>
         </div>
+        <div class="sfaults" id="sfault" hidden></div>
         <div class="trend" id="trend" ${this._config.show_trend ? "" : "hidden"}>
           <div class="trow">
             <div class="seg" id="hours">${[6, 24, 48].map((h) => `<button class="btn ${h === this._config.hours ? "on" : ""}" data-h="${h}">${h} h</button>`).join("")}</div>
@@ -1642,6 +1647,8 @@ class VicareHeatpumpCard extends HTMLElement {
       $("phbtn").classList.toggle("on", this._phOpen);
       $("ph").hidden = !this._phOpen;
       $("top").classList.toggle("phopen", this._phOpen);
+      // the open p-h panel shows the sensor fault in its assessment
+      $("sfault").hidden = this._phOpen || !$("sfault").innerHTML;
       this._renderPH();
     });
     $("hours").addEventListener("click", (e) => {
@@ -2618,6 +2625,12 @@ class VicareHeatpumpCard extends HTMLElement {
       const r = g.dataset.role;
       if (r !== "subcooling" && r !== "superheat") g.style.display = this._roles[r] ? "" : "none";
     });
+    // pressure sensor plausibility
+    const sf = this._sensorFault();
+    const sfHtml = this._sensorFaultHtml(sf, false);
+    if ($("sfault").innerHTML !== sfHtml) $("sfault").innerHTML = sfHtml;
+    $("sfault").hidden = !sfHtml || this._phOpen;
+    for (const [id, bad] of [["v_tc", sf.hp], ["v_hot_p", sf.hp], ["v_t0", sf.lp], ["v_suc_p", sf.lp]]) $(id)?.classList.toggle("susp", !!bad);
     this._renderFoot();
     $("foot").hidden = !$("foot").innerHTML;
 
@@ -2858,6 +2871,64 @@ class VicareHeatpumpCard extends HTMLElement {
     return { p: this._thermo.pBub(tc), est: true };
   }
 
+  /* Plausibility of the pressure sensors. A drifting pressure transmitter gives believable but wrong
+   * readings and usually no fault code, while everything calculated from it (t0, tc, superheat, subcooling,
+   * the health check) goes wrong. Only physically impossible states are flagged, and only when the
+   * condition holds both at t and 5 minutes earlier, while the compressor has run at least the settling time.
+   * At standstill nothing is checked: the pressures do not equalise reliably. The margins were checked against
+   * a week of a healthy Vitocal 333-G (closest: condensing 0.9 K above the supply water, evaporating 3.8 K
+   * below the brine). Returns { hp, lp }: null or { k, a, b } (message key, °C, °C). */
+  _sensorFault(t = this._t) {
+    if (!this._roles.suction_p && !this._roles.hot_gas_p) return { hp: null, lp: null };
+    const now = t ?? Date.now();
+    const a = this._sensorFaultAt(t);
+    if (!a.hp && !a.lp) return a;
+    const b = this._sensorFaultAt(now - 300000);
+    return { hp: a.hp && b.hp ? a.hp : null, lp: a.lp && b.lp ? a.lp : null };
+  }
+
+  _sensorFaultAt(t) {
+    const th = this._thermo, v = (r) => this._val(r, t);
+    const res = { hp: null, lp: null };
+    const pH = this._roles.hot_gas_p ? this._pressure("hot_gas_p", t) : NaN, pS = this._pressure("suction_p", t);
+    const mode = this._mode(t);
+    if (mode === "defrost" || mode === "cooling" || mode === "unknown") return res;
+    const steady = Math.max(5, this._config.steady_minutes);
+    // only a settled run: right after start the cloud values lag and the temperatures have not followed
+    const run = this._runMinutes(t);
+    if (run === null || run < steady) return res;
+    const sinceDef = this._minutesSinceDefrost(t);
+    if (sinceDef !== null && sinceDef < steady) return res;
+    if (isFinite(pH)) {
+      const tc = th.tDew(pH), tcB = th.tBub(pH), tcM = (tc + tcB) / 2;
+      const sup = v("sec_supply"), liq = v("liquid_t"), hot = v("hot_gas_t");
+      // the condenser cannot heat the water above the condensing temperature, the liquid leaving it
+      // cannot be warmer than its bubble point and the compressed gas cannot be colder than its dew point
+      if (tcM < sup - 3) res.hp = { k: "hp_below_supply", a: tcM, b: sup };
+      else if (tcB < liq - 4) res.hp = { k: "hp_below_liquid", a: tcB, b: liq };
+      else if (hot < tc - 4) res.hp = { k: "hp_above_hot", a: tc, b: hot };
+    }
+    if (isFinite(pS)) {
+      const t0 = th.tDew(pS), suc = v("suction_t");
+      // the refrigerant cannot evaporate warmer than the heat source, nor leave the evaporator colder
+      const src = this._air
+        ? (isFinite(v("pri_supply")) ? v("pri_supply") : v("outside"))
+        : Math.max(...["pri_supply", "pri_return"].map(v).filter(isFinite));
+      if (isFinite(src) && t0 > src + (this._air ? 4 : 3)) res.lp = { k: this._air ? "lp_above_air" : "lp_above_brine", a: t0, b: src };
+      else if (suc < t0 - 4) res.lp = { k: "lp_above_suction", a: t0, b: suc };
+    }
+    return res;
+  }
+
+  /* The sensor fault messages, or "" */
+  _sensorFaultHtml(sf, skip) {
+    const i = this._i, f = (x) => `${this._fmt(x)} °C`;
+    return ["hp", "lp"]
+      .filter((s) => sf[s])
+      .map((s) => `<div class="sfault">${VHP_ICON.warn}<span>${vhpEsc(i.sf[s].replace("{why}", i.sf[sf[s].k].replace("{a}", f(sf[s].a)).replace("{b}", f(sf[s].b))))}${skip ? " " + vhpEsc(i.sf[s + "_skip"]) : ""}</span></div>`)
+      .join("");
+  }
+
   _cycle(t = this._t) {
     const th = this._thermo;
     const hs = this._highSide(t);
@@ -2874,7 +2945,7 @@ class VicareHeatpumpCard extends HTMLElement {
     };
   }
 
-  _assess(cy, mode, t = this._t) {
+  _assess(cy, mode, t = this._t, sf = {}) {
     const out = [];
     const i = this._i;
     const add = (id, value, unit, status, msg, dec = 1) => out.push({ id, value, unit, status, msg, dec });
@@ -2932,7 +3003,13 @@ class VicareHeatpumpCard extends HTMLElement {
     }
     const cs = this._val(dhw ? "cop_dhw" : "cop_heating", t);
     if (isFinite(cs)) add("cop_season", cs, "", "info", i.msg.cop_season_info);
-    return out.filter((r) => r.status !== null);
+    // a suspect pressure sensor makes everything calculated from it meaningless
+    const skip = new Set([
+      ...(sf.hp ? ["subcooling", "discharge_sh", "cond_approach"] : []),
+      ...(sf.lp ? ["superheat", "evap_approach", "air_approach"] : []),
+      ...(sf.hp || sf.lp ? ["ratio", "carnot", "expected"] : []),
+    ]);
+    return out.filter((r) => r.status !== null && !skip.has(r.id));
   }
 
   /* Time inside the last compressor run before `t` that lasted at least `minutes`
@@ -3062,20 +3139,21 @@ class VicareHeatpumpCard extends HTMLElement {
       .join("")}</tbody></table>`;
     // assessment
     const mode = this._mode(at);
-    let ass = (past ? `<div class="note">${i.not_running}</div>` : "") + (cy.est ? `<div class="note">${i.est_high}</div>` : "");
+    const sf = this._sensorFault(at);
+    let ass = (past ? `<div class="note">${i.not_running}</div>` : "") + (cy.est ? `<div class="note">${i.est_high}</div>` : "") + this._sensorFaultHtml(sf, true);
     const sinceDef = this._minutesSinceDefrost(at);
     if (this._air && (mode === "defrost" || mode === "cooling")) ass += `<div class="note">${i.reversed_note.replace("{mode}", (i.mode[mode] || mode).toLowerCase())}</div>`;
     else if (!past && run < steadyMin) ass = `<div class="note">${i.settling.replace("{m}", Math.max(0, Math.floor(run))).replace("{s}", steadyMin)}</div>`;
     else if (sinceDef !== null && sinceDef < steadyMin) ass += `<div class="note">${i.after_defrost.replace("{m}", Math.max(0, Math.floor(sinceDef))).replace("{s}", steadyMin)}</div>`;
     else {
-      const res = this._assess(cy, mode, at);
+      const res = this._assess(cy, mode, at, sf);
       const bad = res.filter((r) => r.status === "warn" || r.status === "bad");
       const val = (r) => `${this._fmt(r.value, r.dec)}${r.unit ? " " + r.unit : ""}`;
       const li = (r) => `<li class="${r.status}"><span class="st">${VHP_ICON[r.status] || ""}</span><span class="nm">${i.chk[r.id]}</span><span class="vv">${val(r)}</span>${r.msg ? `<span class="ms">${r.msg}</span>` : ""}</li>`;
       const oks = res.filter((r) => r.status === "ok");
       const infos = res.filter((r) => r.status !== "ok" && !bad.includes(r));
       ass +=
-        (bad.length ? `<ul class="chk">${bad.map(li).join("")}</ul>` : `<div class="note ok">${VHP_ICON.ok}<span>${i.all_ok}</span></div>`) +
+        (bad.length ? `<ul class="chk">${bad.map(li).join("")}</ul>` : sf.hp || sf.lp ? "" : `<div class="note ok">${VHP_ICON.ok}<span>${i.all_ok}</span></div>`) +
         (oks.length ? `<ul class="chk okg">${oks.map((r) => `<li class="ok" title="${vhpEsc(r.msg || "")}"><span class="st">${VHP_ICON.ok}</span><span class="nm">${i.chk[r.id]}</span><span class="vv">${val(r)}</span></li>`).join("")}</ul>` : "") +
         (infos.length ? `<div class="infos">${infos.map((r) => `<span class="ic" title="${vhpEsc(r.msg || "")}">${i.chk[r.id]} <b>${val(r)}</b></span>`).join("")}</div>` : "");
     }
@@ -3414,6 +3492,11 @@ table.pts td:nth-child(2) { white-space: normal; color: var(--secondary-text-col
 h4 { margin: 12px 0 6px; font-size: 14px; font-weight: 500; color: var(--primary-text-color); }
 .note { font-size: 13px; color: var(--secondary-text-color); display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
 .note.ok { color: var(--success-color, #43a047); }
+.sfaults { display: grid; gap: 6px; margin-top: 8px; }
+.sfault { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; line-height: 1.35; color: var(--primary-text-color); padding: 8px 10px; border-radius: 8px; border-left: 4px solid var(--warning-color, #ffa600); background: color-mix(in srgb, var(--warning-color, #ffa600) 12%, transparent); }
+.sfault svg { flex: none; color: var(--warning-color, #ffa600); }
+.phass .sfault { margin-bottom: 6px; }
+#diagram text.susp { fill: var(--warning-color, #ffa600); }
 ul.chk { list-style: none; padding: 0; margin: 0; }
 ul.chk li { display: grid; grid-template-columns: 22px 1fr auto; column-gap: 6px; padding: 5px 0; border-bottom: 1px solid var(--divider-color, rgba(127,127,127,.12)); font-size: 13px; color: var(--primary-text-color); }
 ul.chk .st { display: flex; } ul.chk .vv { font-weight: 500; white-space: nowrap; }

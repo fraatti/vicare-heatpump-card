@@ -19,6 +19,7 @@ A Home Assistant Lovelace card for Viessmann heat pumps (ground and air source) 
 - **Trends**: temperatures and pressures with a band for every run. Drag across the chart or use the slider to see the circuit at any moment, step a day back or forward, play the history (1, 2 or 5 min/s) or enlarge the charts to read every value at the cursor.
 - **Units without a high pressure sensor** (e.g. Vitocal 250-A, 252-A, 200-A, 222-S): the condensing temperature is estimated from the liquid line and the supply water and marked with ≈; the checks that depend on it are left out.
 - **log p-h diagram** with the cycle points, the source and supply temperature levels, a point table and a health check (superheat, subcooling, hot gas temperature, approaches, ΔT). Air source units are checked against outdoor air; defrost and cooling are not assessed, and the check waits for operation to settle after a defrost.
+- **Pressure sensor check**: a drifting pressure transmitter gives believable but wrong readings and usually no fault code, while the condensing and evaporating temperatures, superheat, subcooling and the health check all go wrong. The card flags a high or low pressure reading that is physically impossible (condensing below the supply water or the liquid line, evaporating above the brine or outdoor air or the suction gas) while the compressor has run at least the settling time, names the suspect sensor and leaves out the checks that depend on it.
 - **Logbook** (optional): the heat pump's own event log, kept in a CSV file and shown in the card and on the timeline. Vitotronic 200 (WO1C) units (Vitocal 300-G, 333-G, older 200-S/222-S) have a real logbook. Newer units (Vitocal 250-A, 252-A, 200-A, 151-A, newer 222-S) have none; for them the script logs the status, info, service and fault messages (S.125 heating, S.128 defrost, S.115 valve to hot water …) as they appear, with the unit's own time stamps.
 - **Disabled sensors**: most refrigerant sensors of the ViCare integration are disabled by default. For an administrator the card lists the disabled ones it would use and enables them with one button.
 - No entity IDs to set up: entities are found from the ViCare integration's own sensor keys. English, Finnish, Swedish and German, light and dark themes, phone layout.
@@ -90,7 +91,7 @@ Copy the packages to `/config/packages` (`homeassistant: packages: !include_dir_
 
 ## Development
 
-`demo/index.html` shows the card without Home Assistant. It has a synthetic Vitocal 333-G with a 24-hour history (`demo/mock.js`) and snapshots of real units from [PyViCare](https://github.com/openviess/PyViCare)'s test data (Apache-2.0): Vitocal 250-A, 252-A, 222-S, 200-A (two ViCare devices) and 333-G. `tools/make_demo_models.py` rebuilds `demo/models.js` from those files. Open the page directly or through any local web server; URL parameters: `model`, `lang`, `source`, `phase`, `buffer`, `mixer`, `circuit`, `heater`, `split`, and for a second heating circuit `circuits=2` (adds `supply_temperature_2` and `circulation_pump_2` to the synthetic unit), `circuit2` (`floor`, `radiators`, `none`), `mixer2=1`, `name1`, `name2`.
+`demo/index.html` shows the card without Home Assistant. It has a synthetic Vitocal 333-G with a 24-hour history (`demo/mock.js`) and snapshots of real units from [PyViCare](https://github.com/openviess/PyViCare)'s test data (Apache-2.0): Vitocal 250-A, 252-A, 222-S, 200-A (two ViCare devices) and 333-G. `tools/make_demo_models.py` rebuilds `demo/models.js` from those files. Open the page directly or through any local web server; URL parameters: `model`, `lang`, `source`, `phase`, `buffer`, `mixer`, `circuit`, `heater`, `split`, and for a second heating circuit `circuits=2` (adds `supply_temperature_2` and `circulation_pump_2` to the synthetic unit), `circuit2` (`floor`, `radiators`, `none`), `mixer2=1`, `name1`, `name2`, and `fault=hp` or `fault=lp` (a failed pressure transmitter) with `cycle=<minutes>` (where "now" is in the synthetic 90-minute cycle, e.g. 30 running, 89 stopped, which is not checked).
 
 ## Limitations
 
@@ -118,6 +119,8 @@ Kortti näyttää Viessmann-lämpöpumpun kylmäainepiirin samaan tapaan kuin la
 
 **Mallit ilman korkeapaineanturia** (esim. Vitocal 250-A, 252-A, 200-A, 222-S): lauhtumislämpötila arvioidaan nestelinjan ja menoveden lämpötilasta ja merkitään ≈-merkillä; siitä riippuvat kohdat jätetään arviosta pois.
 
+**Paineanturin vika.** Ryöminyt painelähetin antaa uskottavan näköisiä mutta vääriä lukemia, eikä vikakoodia yleensä tule; tc, t0, tulistus, alijäähdytys ja arvio menevät kaikki pieleen. Kortti ilmoittaa, jos korkea- tai matalapaineen lukema on fysikaalisesti mahdoton (lauhtuminen menovettä tai nestelinjaa kylmempänä, höyrystyminen liuosta, ulkoilmaa tai imukaasua lämpimämpänä). Tarkistus tehdään vain vakiintuneessa käynnissä: kompressorin on käytävä vähintään vakiintumisaika (10 min), ja ehdon on täytyttävä myös 5 minuuttia aiemmin. Kortti kertoo, kumpi anturi on epäilty ja jättää siitä riippuvat kohdat arviosta pois.
+
 **Ilma-vesilämpöpumppu.** Asetuksella `source: air` (tai automaattisesti, jos liuoksen paluuanturia ja liuospumppua ei ole) liuospiirin tilalle piirretään ulkoyksikkö, lamellipatteri, puhallin ja 4-tieventtiili. Sulatuksessa venttiili kääntää kierron: kuumakaasu menee ulkoyksikön patteriin, puhallin pysähtyy ja lämpö otetaan vedestä.
 
 **Nopeudet.** Kompressorin nopeus (% tai rps), paisuntaventtiilin avaus, puhaltimen sekä liuos- ja kiertovesipumpun nopeus näytetään, jos anturi on, ja virtausanimaatiot nopeutuvat tai hidastuvat niiden mukaan.
@@ -143,6 +146,8 @@ Kortet visar Viessmann-värmepumpens köldmediekrets på samma sätt som aggrega
 
 **Loggbok** (`examples/`): skriptet `vicare_logbook.py` sparar aggregatets loggbok, eller på nyare modeller dess status-, info-, service- och felmeddelanden. Lägg till `--lang sv` i kommandot för svenska texter.
 
+**Tryckgivarfel.** En drivande tryckgivare ger rimliga men felaktiga värden och oftast ingen felkod. Kortet varnar när hög- eller lågtrycket är fysikaliskt omöjligt under en stabil körning, anger vilken givare som är misstänkt och utelämnar kontrollerna som beror på den.
+
 Bedömningens gränser är allmänna riktvärden för berg- och luftvärmepumpar, inte tillverkarens värden, och ersätter inte service.
 
 ## Deutsch
@@ -157,6 +162,8 @@ Die Karte zeigt den Kältekreis einer Viessmann-Wärmepumpe so wie das Servicedi
 3. Die Karte über die Kartenauswahl hinzufügen (*ViCare Heat Pump Card*).
 
 **Logbuch** (`examples/`): Das Skript `vicare_logbook.py` speichert das Logbuch des Geräts bzw. bei neueren Modellen die Status-, Info-, Service- und Störungsmeldungen. Für deutsche Texte `--lang de` an den Befehl anhängen.
+
+**Drucksensorfehler.** Ein driftender Drucktransmitter liefert plausibel wirkende, aber falsche Werte und meist keinen Störungscode. Die Karte warnt, wenn Hoch- oder Niederdruck im eingeschwungenen Betrieb physikalisch unmöglich ist, nennt den verdächtigen Sensor und lässt die davon abhängigen Prüfungen weg.
 
 Die Grenzwerte der Bewertung sind allgemeine Richtwerte für Sole/Wasser- und Luft/Wasser-Wärmepumpen, keine Herstellerwerte, und ersetzen keine Wartung.
 

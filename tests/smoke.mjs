@@ -194,3 +194,52 @@ describe("two heating circuits", { concurrency: 4 }, () => {
     });
   }
 });
+
+// Pressure sensor plausibility: ?fault=hp|lp makes one transmitter read far too low or too high, ?cycle=<min>
+// fixes where "now" is in the synthetic 90 minute cycle (30: running for 26 min, 89: stopped for 39 min; only a settled run is checked).
+const SENSOR = [
+  { qs: "cycle=30", hp: false, lp: false },
+  { qs: "cycle=89", hp: false, lp: false },
+  { qs: "cycle=30&fault=hp", hp: "condensing temperature", lp: false },
+  { qs: "cycle=89&fault=hp", hp: false, lp: false }, // standstill is not checked
+  { qs: "cycle=30&fault=lp", hp: false, lp: "incoming brine" },
+  { qs: "cycle=30&fault=lp&source=air", hp: false, lp: "outdoor air" },
+  { qs: "cycle=30&fault=hp&lang=fi", hp: "Korkeapaineanturin", lp: false },
+  { qs: "cycle=8&fault=hp", hp: false, lp: false }, // not settled yet
+];
+describe("pressure sensor plausibility", { concurrency: 4 }, () => {
+  for (const c of SENSOR) {
+    test(`?${c.qs}`, async () => {
+      const { page, errors } = await open(c.qs);
+      try {
+        const main = await sr(page, (root) => {
+          const el = root.getElementById("sfault");
+          return { hidden: el.hidden, n: el.querySelectorAll(".sfault").length, text: el.textContent, susp: [...root.querySelectorAll("#diagram .susp")].map((e) => e.id) };
+        });
+        const want = [c.hp, c.lp].filter(Boolean);
+        assert.equal(main.n, want.length, `number of sensor messages (${main.text})`);
+        assert.equal(main.hidden, want.length === 0, "the message box is shown only with a message");
+        for (const w of want) assert.ok(main.text.includes(w), `message mentions '${w}': ${main.text}`);
+        assert.equal(main.susp.includes("v_tc"), !!c.hp, "tc marked suspect with a high pressure fault");
+        assert.equal(main.susp.includes("v_t0"), !!c.lp, "t0 marked suspect with a low pressure fault");
+        // the open p-h panel takes the message into its assessment and drops what depends on the sensor
+        await page.click("vicare-heatpump-card >> #phbtn");
+        await page.waitForTimeout(200);
+        const ph = await sr(page, (root) => ({
+          main: root.getElementById("sfault").hidden,
+          n: root.querySelectorAll("#ph .phass .sfault").length,
+          ids: [...root.querySelectorAll("#ph .chk .nm")].map((e) => e.textContent),
+        }));
+        assert.equal(ph.main, true, "the card's message box hides while the p-h panel is open");
+        if (c.hp && c.qs.startsWith("cycle=30")) {
+          assert.ok(ph.n >= 1, "the assessment shows the sensor message");
+          assert.ok(!ph.ids.some((s) => /Subcooling|Alijäähdytys/.test(s)), `no subcooling check with a suspect high pressure sensor (${ph.ids})`);
+        }
+        if (c.lp) assert.ok(!ph.ids.includes("Superheat"), `no superheat check with a suspect low pressure sensor (${ph.ids})`);
+        assert.deepEqual(errors, [], "no page errors or console errors");
+      } finally {
+        await page.close();
+      }
+    });
+  }
+});

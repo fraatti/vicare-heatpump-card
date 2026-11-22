@@ -2,7 +2,14 @@
 
 All notable changes to the ViCare Heat Pump Card. Versions follow [semantic versioning](https://semver.org/).
 
-## Unreleased
+## 1.7.0 – 2026-11-22
+
+### Added
+- Pressure sensor check. A drifting pressure transmitter gives believable but wrong readings and usually no fault code, while tc, t0, superheat, subcooling and the health check all go wrong. The card shows a message under the diagram (and in the log p-h assessment) when a reading is physically impossible:
+  - high pressure: the condensing temperature is below the heating supply water or the liquid line, or above the hot gas;
+  - low pressure: the evaporating temperature is above the incoming brine (outdoor air for air source) or the suction gas.
+  Only a settled run is checked: the compressor must have run at least the settling time (`steady_minutes`, 10 min) and the condition must hold now and 5 minutes earlier; not at standstill, during defrost or cooling, or right after a defrost. tc or t0 is shown in the warning colour, and the checks that depend on the suspect sensor are left out. The margins were checked against a week of a healthy Vitocal 333-G without a single message.
+- Demo parameters `fault=hp|lp` and `cycle=<minutes>`; the synthetic unit's entities have realistic `last_changed` times.
 
 ### Changed
 - Example dashboard: the weekly charts follow one date picker (week, month, year, ‹ › to step back) instead of a fixed 365 days; the weekly table is full width below the charts and scrolls for older weeks.

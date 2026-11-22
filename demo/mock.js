@@ -60,8 +60,10 @@
     mixer_position_2: ["sensor", "%"], circuit_pump_speed_2: ["sensor", "%"],
   });
   const cyc = 90 * 60000, onFor = 50 * 60000;
-  const at = (t) => {
-    const ph = ((t % cyc) + cyc) % cyc, on = ph > 4 * 60000 && ph < onFor, prep = ph <= 4 * 60000;
+  // ?cycle=<minutes>: where "now" is in the 90 minute cycle (4 min preparing, compressor on until 50 min)
+  const OFS = Q.has("cycle") ? (((+Q.get("cycle") * 60000 - (Date.now() % cyc)) % cyc) + cyc) % cyc : 0;
+  let at = (t) => {
+    const ph = (((t + OFS) % cyc) + cyc) % cyc, on = ph > 4 * 60000 && ph < onFor, prep = ph <= 4 * 60000;
     const k = on ? Math.min(1, (ph - 4 * 60000) / 900000) : 0;
     const off = on ? 0 : Math.min(1, (ph - onFor) / 1800000);
     return {
@@ -78,6 +80,18 @@
       ...(TWO ? { supply_temperature: 45.2, supply_temperature_2: 31.1, circulation_pump_2: "on", mixer_position_2: 27, circuit_pump_speed_2: 55 } : {}),
     };
   };
+  // ?fault=hp|lp: a drifting pressure transmitter that reads far too low (hp: as in a Vitocal 333-G whose
+  // high pressure sensor failed) or too high (lp) while the compressor runs
+  const FAULT = Q.get("fault");
+  if (FAULT === "hp" || FAULT === "lp") {
+    const base = at;
+    at = (t) => {
+      const v = base(t), on = v.compressor === "on";
+      if (FAULT === "hp") v.hot_gas_pressure = on ? 11 + (t / 60000 % 7) * 0.3 : 3;
+      else v.suction_gas_pressure = on ? 12 : 3;
+      return v;
+    };
+  }
   // ?phase=defrost|preparing_defrost|passive_defrost|cooling forces the current state
   const force = (v) => {
     if (!PH) return v;
@@ -96,7 +110,11 @@
     // ?split=1: the refrigerant circuit belongs to a second device (outdoor unit) of the same account
     const d2 = Q.get("split") === "1" && /^(hot_gas|suction_gas|liquid_gas|condenser|evaporator|compressor|primary)/.test(tk) ? "dev2" : dev;
     entities[id] = { entity_id: id, platform: "vicare", translation_key: key || tk, device_id: d2 };
-    states[id] = { entity_id: id, state: String(typeof v[tk] === "number" ? v[tk].toFixed(1) : v[tk]), attributes: { unit_of_measurement: u, friendly_name: tk }, last_changed: new Date(now).toISOString() };
+    const str = (x) => String(typeof x === "number" ? x.toFixed(1) : x);
+    // last_changed: when the value last changed, looking back minute by minute (at most one cycle)
+    let lc = now;
+    while (lc > now - cyc && str(force(at(lc - 60000))[tk]) === str(v[tk])) lc -= 60000;
+    states[id] = { entity_id: id, state: str(v[tk]), attributes: { unit_of_measurement: u, friendly_name: tk }, last_changed: new Date(lc).toISOString() };
   }
   // ?disabled=1: some sensors are disabled in the entity registry (as ViCare ships them)
   const disabled = [];
