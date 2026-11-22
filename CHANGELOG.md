@@ -2,6 +2,18 @@
 
 All notable changes to the ViCare Heat Pump Card. Versions follow [semantic versioning](https://semver.org/).
 
+## 1.4.0 – 2026-11-22
+
+### Added
+- Second heating circuit. The options `heating_circuit_2` (`auto`, `none`, `floor`, `radiators`) and `mixer_2` draw it below the first circuit; `auto` draws it (as radiators) when the device has a second supply temperature sensor or circulation pump. Both circuits take their water from the same buffer outlet or supply pipe through a branch, and their returns join on a return manifold. A mixed circuit has its own mixing valve and pump, and with a buffer every circuit has its own pump.
+- Each circuit is coloured by its own supply temperature (its own gradient and value), and its flow animation runs with its own pump.
+- New roles `circ_supply_2` and `circ_pump_2` (found automatically: the second ViCare entity of the same kind, `…_2`), and `circ_pump_speed_2` and `mixer_2` for your own sensors.
+- Circuit names `circuit_name` and `circuit_name_2`. With two circuits the default names are "Heating circuit 1" and "Heating circuit 2".
+- Demo parameters `circuits=2`, `circuit2`, `mixer2`, `name1`, `name2`, and browser tests for two circuits.
+
+### Unchanged
+- The one-circuit layout is drawn exactly as before.
+
 ## 1.3.0 – 2026-11-22
 
 ### Changed

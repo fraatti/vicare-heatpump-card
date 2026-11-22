@@ -52,6 +52,13 @@
     heater_power: ["sensor", "kW"], mixer_position: ["sensor", "%"], circuit_pump_speed: ["sensor", "%"], fan_speed: ["sensor", "%"], compressor_modulation: ["sensor", "%"], eev_position: ["sensor", "%"],
   };
   if (AIR) delete R.primary_circuit_return_temperature; // an air source unit has no brine return
+  // ?circuits=2: a second heating circuit. ViCare gives its entities the same translation key with an "_2"
+  // suffix in the entity id (the third item is the translation key when it differs from the name).
+  const TWO = Q.get("circuits") === "2";
+  if (TWO) Object.assign(R, {
+    supply_temperature_2: ["sensor", "°C", "supply_temperature"], circulation_pump_2: ["binary_sensor", undefined, "circulation_pump"],
+    mixer_position_2: ["sensor", "%"], circuit_pump_speed_2: ["sensor", "%"],
+  });
   const cyc = 90 * 60000, onFor = 50 * 60000;
   const at = (t) => {
     const ph = ((t % cyc) + cyc) % cyc, on = ph > 4 * 60000 && ph < onFor, prep = ph <= 4 * 60000;
@@ -67,6 +74,8 @@
       domestic_hot_water_charging: "off", dhw_storage_top_temperature: 45.9, cop_heating: 4.6, cop_dhw: 3.4, compressor_starts: 40654,
       buffer_main_temperature: on ? 31 + 3 * k : 33 - 3 * off, supply_temperature: 29.5, heater_power: on && k > 0.8 ? 3 : 0, mixer_position: 42, circuit_pump_speed: 68,
       fan_speed: on ? 45 : 0, compressor_modulation: on ? 40 + 35 * k : 0, eev_position: on ? 34 : 0,
+      // two circuits: radiators at about 45 °C, a mixed floor loop at about 31 °C
+      ...(TWO ? { supply_temperature: 45.2, supply_temperature_2: 31.1, circulation_pump_2: "on", mixer_position_2: 27, circuit_pump_speed_2: 55 } : {}),
     };
   };
   // ?phase=defrost|preparing_defrost|passive_defrost|cooling forces the current state
@@ -79,13 +88,14 @@
     return v;
   };
   const now = Date.now();
-  const states = {}, entities = {};
+  const states = {}, entities = {}, keyOf = {};
   const v = force(at(now));
-  for (const [tk, [d, u]] of Object.entries(R)) {
+  for (const [tk, [d, u, key]] of Object.entries(R)) {
     const id = `${d}.cu401b_g_${tk}`;
+    keyOf[id] = tk;
     // ?split=1: the refrigerant circuit belongs to a second device (outdoor unit) of the same account
     const d2 = Q.get("split") === "1" && /^(hot_gas|suction_gas|liquid_gas|condenser|evaporator|compressor|primary)/.test(tk) ? "dev2" : dev;
-    entities[id] = { entity_id: id, platform: "vicare", translation_key: tk, device_id: d2 };
+    entities[id] = { entity_id: id, platform: "vicare", translation_key: key || tk, device_id: d2 };
     states[id] = { entity_id: id, state: String(typeof v[tk] === "number" ? v[tk].toFixed(1) : v[tk]), attributes: { unit_of_measurement: u, friendly_name: tk }, last_changed: new Date(now).toISOString() };
   }
   // ?disabled=1: some sensors are disabled in the entity registry (as ViCare ships them)
@@ -106,7 +116,7 @@
       if (msg.type === "config/entity_registry/update") return { entity_entry: { entity_id: msg.entity_id }, reload_delay: 30 };
       const a = Date.parse(msg.start_time), b = Date.parse(msg.end_time), out = {};
       for (const id of msg.entity_ids) {
-        const tk = entities[id]?.translation_key; if (!tk) continue;
+        const tk = entities[id] && keyOf[id]; if (!tk) continue;
         const arr = [];
         for (let t = a; t <= b; t += 120000) { const x = at(t)[tk]; arr.push({ s: typeof x === "number" ? x.toFixed(1) : x, lu: t / 1000 }); }
         out[id] = arr;

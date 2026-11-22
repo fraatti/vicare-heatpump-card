@@ -27,6 +27,12 @@ const CASES = [
   { qs: "source=ground&buffer=yes&mixer=1&circuit=radiators&heater=1", source: "ground", synthetic: true },
   { qs: "split=1", source: "ground", synthetic: true },
   { qs: "disabled=1", source: "ground", synthetic: true, disabled: true },
+  // a second heating circuit (supply_temperature_2, circulation_pump_2 on the synthetic device)
+  { qs: "circuits=2", source: "ground", synthetic: true, circuits: 2 },
+  { qs: "circuits=2&buffer=yes&circuit=radiators&circuit2=floor&mixer2=1&lang=fi", source: "ground", synthetic: true, circuits: 2 },
+  { qs: "circuits=2&mixer=1&mixer2=1&circuit2=floor&lang=de", source: "ground", synthetic: true, circuits: 2 },
+  { qs: "circuits=2&buffer=yes&mixer=1&heater=1&lang=sv", source: "ground", synthetic: true, circuits: 2 },
+  { qs: "circuits=2&circuit2=none", source: "ground", synthetic: true, circuits: 1 },
 ];
 
 let browser;
@@ -126,6 +132,61 @@ describe("narrow layout (400 px)", { concurrency: 4 }, () => {
         });
         if (c.source === "air") assert.ok(r.vbw <= 760, `air view box width <= 760 at 400 px (got ${r.vbw})`);
         assert.deepEqual(r.over, [], "no diagram text overflows the svg horizontally");
+        assert.deepEqual(errors, [], "no page errors or console errors");
+      } finally {
+        await page.close();
+      }
+    });
+  }
+});
+
+describe("two heating circuits", { concurrency: 4 }, () => {
+  for (const c of CASES.filter((x) => x.circuits)) {
+    test(`?${c.qs}`, async () => {
+      const { page, errors } = await open(c.qs, { width: 1500, height: 900 });
+      try {
+        const q = new URLSearchParams(c.qs);
+        const r = await sr(page, (root) => {
+          const svg = root.querySelector("#dsvg");
+          const stop = (id) => root.getElementById(id)?.getAttribute("stop-color") || null;
+          const pill = (role) => {
+            const p = svg.querySelector(`g.val[data-role="${role}"] rect.pill`);
+            return p ? getComputedStyle(p).fill : null;
+          };
+          return {
+            view: svg.dataset.view,
+            c1: svg.querySelectorAll("#floorg :is(.csup, .floor)").length,
+            c2: svg.querySelectorAll("#floorg :is(.csup2, .floor2, .rad2)").length,
+            floor2: svg.querySelectorAll("#floorg .floor2").length, rad2: svg.querySelectorAll("#floorg .rad2").length,
+            grad2: !!root.getElementById("floorgr2"),
+            hpump: !!root.getElementById("hpump"), hpump2: !!root.getElementById("hpump2"),
+            mixers: svg.querySelectorAll("#floorg .mixer").length,
+            fg0: stop("fg0"), fg20: stop("fg20"), pill1: pill("circ_supply"), pill2: pill("circ_supply_2"),
+            v1: root.getElementById("v_circ_supply")?.textContent || "", v2: root.getElementById("v_circ_supply_2")?.textContent || "",
+          };
+        });
+        assert.equal(r.view, "full", "full view at 1500 px");
+        assert.ok(r.c1 > 0, "circuit 1 is drawn");
+        if (c.circuits === 1) {
+          assert.equal(r.c2, 0, "circuit2=none draws one circuit");
+          assert.equal(r.grad2, false, "no second gradient");
+        } else {
+          assert.ok(r.c2 > 0, "circuit 2 is drawn");
+          assert.ok(r.grad2, "circuit 2 has its own gradient");
+          // auto: a detected second circuit is drawn as radiators
+          if ((q.get("circuit2") || "auto") === "floor") assert.ok(r.floor2 > 0 && r.rad2 === 0, "circuit 2 is a floor loop");
+          else assert.ok(r.rad2 > 0 && r.floor2 === 0, "circuit 2 has radiators");
+          const buf = q.get("buffer") === "yes", m1 = q.get("mixer") === "1", m2 = q.get("mixer2") === "1";
+          assert.equal(r.hpump, buf || m1, "circuit 1 has its own pump with a buffer or a mixing valve");
+          assert.equal(r.hpump2, buf || m2, "circuit 2 has its own pump with a buffer or a mixing valve");
+          assert.equal(r.mixers, +m1 + +m2, "one mixing valve per mixed circuit");
+          // the mock gives circuit 1 about 45 °C and circuit 2 about 31 °C: the circuits must differ in colour
+          assert.match(r.v1, /45/, "circuit 1 supply value");
+          assert.match(r.v2, /31/, "circuit 2 supply value");
+          assert.ok(r.fg0 && r.fg20, "both gradients have a supply colour");
+          assert.notEqual(r.fg0, r.fg20, "the circuits' supply colours differ");
+          assert.ok(r.pill1 && r.pill2 && r.pill1 !== r.pill2, `the value pills differ in colour (${r.pill1} vs ${r.pill2})`);
+        }
         assert.deepEqual(errors, [], "no page errors or console errors");
       } finally {
         await page.close();
