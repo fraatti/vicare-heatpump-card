@@ -19,7 +19,8 @@ A Home Assistant Lovelace card for Viessmann heat pumps (ground and air source) 
 - **Trends**: temperatures and pressures with a band for every run. Drag across the chart or use the slider to see the circuit at any moment, step a day back or forward, play the history (1, 2 or 5 min/s) or enlarge the charts to read every value at the cursor.
 - **Units without a high pressure sensor** (e.g. Vitocal 250-A, 252-A, 200-A, 222-S): the condensing temperature is estimated from the liquid line and the supply water and marked with ≈; the checks that depend on it are left out.
 - **log p-h diagram** with the cycle points, the source and supply temperature levels, a point table and a health check (superheat, subcooling, hot gas temperature, approaches, ΔT, lift tc − t0 against the controller's limit). Air source units are checked against outdoor air; defrost and cooling are not assessed, and the check waits for operation to settle after a defrost.
-- **Logbook** (optional): the heat pump's own event log, kept in a CSV file and shown in the card and on the timeline.
+- **Logbook** (optional): the heat pump's own event log, kept in a CSV file and shown in the card and on the timeline. Vitotronic 200 (WO1C) units (Vitocal 300-G, 333-G, older 200-S/222-S) have a real logbook. Newer units (Vitocal 250-A, 252-A, 200-A, 151-A, newer 222-S) have none; for them the script logs the status, info, service and fault messages (S.125 heating, S.128 defrost, S.115 valve to hot water …) as they appear, with the unit's own time stamps.
+- **Disabled sensors**: most refrigerant sensors of the ViCare integration are disabled by default. For an administrator the card lists the disabled ones it would use and enables them with one button.
 - No entity IDs to set up: entities are found from the ViCare integration's own sensor keys. Finnish and English, light and dark themes, phone layout.
 
 ## Installation
@@ -65,7 +66,7 @@ max_lift: 62             # refrigerant controller limit for tc - t0 (Vitotronic 
 
 Roles: `hot_gas_t`, `hot_gas_p`, `suction_t`, `suction_p`, `liquid_t`, `subcooling`, `superheat`, `eev`, `compressor`, `comp_speed`, `phase`, `starts`, `sec_supply`, `sec_return`, `circ_pump`, `circ_pump_speed`, `dhw_charging`, `dhw_top`, `dhw_circ`, `buffer_t`, `circ_supply`, `mixer`, `heater`, `pri_supply`, `pri_return`, `pri_pump`, `fan`, `outside`, `cop_heating`, `cop_dhw`, `cop_total`. `comp_speed` is found automatically on inverter units (`compressor_modulation`); your own sensor may give rps instead. `circ_pump_speed`, `mixer`, `heater`, `fan` (fan speed %) and `eev` (expansion valve opening %) are not provided by the ViCare integration; point them to your own sensors if you have them.
 
-Most refrigerant circuit sensors of the ViCare integration are **disabled by default**. Open the device page, choose *+ N entities not shown* and enable at least hot gas and suction gas temperature and pressure, liquid gas temperature, condenser subcooling and evaporator overheat. The card lists the sensors it is missing.
+Most refrigerant circuit sensors of the ViCare integration are **disabled by default**. The card lists them under the diagram; an administrator can enable them there with *Enable* (Home Assistant reloads the integration about 30 seconds later). Or open the device page, choose *+ N entities not shown* and enable them there. Sensors the device does not have are listed separately.
 
 ## Optional extras (`examples/`)
 
@@ -76,7 +77,7 @@ Copy the packages to `/config/packages` (`homeassistant: packages: !include_dir_
 | `packages/heatpump_tc_t0.yaml` | tc and t0 as sensors (history and statistics) |
 | `packages/heatpump_dhw.yaml` | Lift tc − t0 and the highest lift and pressure of every hot water run |
 | `packages/heatpump_weekly.yaml` | Weekly means during runs, run lengths and runtimes, kept in long-term statistics |
-| `packages/heatpump_logbook.yaml` + `vicare_logbook.py` | Keeps the device logbook (`/config/vicare_logbook.csv`) and notifies about unusual entries. Uses the ViCare integration's own token, which is never printed or stored; 48 API calls a day |
+| `packages/heatpump_logbook.yaml` + `vicare_logbook.py` | Keeps the device logbook (`/config/vicare_logbook.csv`) and notifies about unusual entries. On units without a logbook it logs the device messages instead (fault and service messages are notified, also when they clear). Uses the ViCare integration's own token, which is never printed or stored; 48 API calls a day. Message times are taken as UTC and shown in Home Assistant's time zone |
 | `heatpump-dashboard.yaml` | Example dashboard with the card, the packages and history views |
 
 ## Development
@@ -100,7 +101,7 @@ Kortti näyttää Viessmann-lämpöpumpun kylmäainepiirin samaan tapaan kuin la
 
 **Asennus**
 1. HACS → ⋮ → *Custom repositories* → tämän repositorion osoite, tyyppi *Dashboard*. Tai kopioi `dist/vicare-heatpump-card.js` kansioon `/config/www/` ja lisää resurssi `/local/vicare-heatpump-card.js?v=1` (JavaScript-moduuli).
-2. Ota ViCare-laitteen sivulta käyttöön kylmäainepiirin anturit (kuumakaasu, imukaasu, nestelinja, alijäähdytys, tulistus). Kortti kertoo, mitkä puuttuvat.
+2. Ota käyttöön kylmäainepiirin anturit (kuumakaasu, imukaasu, nestelinja, alijäähdytys, tulistus). Kortti luettelee käytöstä poistetut anturit, ja ylläpitäjä voi ottaa ne käyttöön kortin *Ota käyttöön* -napista. Laitteelta puuttuvat anturit kortti listaa erikseen.
 3. Lisää kortti kortinvalitsimesta (*ViCare Heat Pump Card*).
 
 **Käyttö**
@@ -115,7 +116,7 @@ Kortti näyttää Viessmann-lämpöpumpun kylmäainepiirin samaan tapaan kuin la
 
 **Lämmönjako.** Asetuksissa valitaan lattialämmitys tai patterit, puskurivaraaja (`buffer`), shuntti (`mixer`) ja sähkövastus (`heater`). Osiosta *Anturit* jokaisen arvon voi vaihtaa omaan entiteettiin, myös ilman ViCare-integraatiota.
 
-**Lisäosat** (`examples/`): tc/t0-anturit, käyttövesijaksojen nostokorkeus, viikkotilastot, tapahtumaloki ja valmis kojelauta. Entiteetti-ID:t ovat Vitocal 333-G:n; vaihda ne omaan laitteeseen sopiviksi.
+**Lisäosat** (`examples/`): tc/t0-anturit, käyttövesijaksojen nostokorkeus, viikkotilastot, tapahtumaloki ja valmis kojelauta. Tapahtumaloki toimii Vitotronic 200 (WO1C) -koneissa (300-G, 333-G, vanhemmat 200-S/222-S) laitteen omasta lokista; uudemmissa (250-A, 252-A, 200-A, 151-A) skripti kirjaa laitteen tila-, info-, huolto- ja vikaviestit (esim. S.125 lämmitys, S.128 sulatus) niiden ilmestyessä. Entiteetti-ID:t ovat Vitocal 333-G:n; vaihda ne omaan laitteeseen sopiviksi.
 
 Split-mallin sisä- ja ulkoyksikkö näkyvät ViCaressa kahtena laitteena; kortti yhdistää niiden anturit itse, tai ulkoyksikön voi valita asetuksesta *Muut laitteet*.
 

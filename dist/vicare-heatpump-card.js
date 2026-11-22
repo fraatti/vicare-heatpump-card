@@ -4,7 +4,7 @@
  * indicative health check for Viessmann heat pumps using the built-in ViCare
  * integration. MIT License.
  */
-const VHP_VERSION = "1.0.0";
+const VHP_VERSION = "1.1.0";
 
 /* Refrigerant tables generated with CoolProp (IIR reference state).
  * sat: [T °C, p_bubble bar(a), p_dew bar(a), h_liquid kJ/kg, h_vapour kJ/kg]
@@ -81,13 +81,14 @@ const VHP_I18N = {
     scrub: "Ajankohta",
     trend_refr: "kylmäaine",
     trend_water: "vesi ja liuos",
+    trend_water_air: "vesi ja ilma",
     stopped: "Kompressori seis: arvot ovat tasaantuneita, eivät käyntiarvoja.",
     log_fetched: "haettu {t}",
     logbook: "Tapahtumaloki",
     log_short: "Loki",
-    ev: { prep: "Liuospumppu käynnistyi", start: "Kompressori käynnistyi", stop: "Kompressori pysähtyi", valve: "Vaihtoventtiili", valve_on: "Vaihtoventtiili käyttövedelle", valve_off: "Vaihtoventtiili lämmitykselle", info: "Liuospumppu pysähtyi", other: "Muu tapahtuma" },
+    ev: { prep: "Liuospumppu käynnistyi", start: "Kompressori käynnistyi", stop: "Kompressori pysähtyi", valve: "Vaihtoventtiili", valve_on: "Vaihtoventtiili käyttövedelle", valve_off: "Vaihtoventtiili lämmitykselle", info: "Liuospumppu pysähtyi", defrost: "Sulatus", other: "Muu tapahtuma" },
     ev_reason: { on_hyst: "päällekytkentähystereesi saavutettu", demand: "tehokäsky", off_hyst: "poiskytkentähystereesi saavutettu", temp_rise: "lämpötila saavutettu", circuit_change: "hydr. piirin vaihto", heating: "lämmitys", dhw: "käyttövesi" },
-    ev_legend: { start: "käynnistys", stop: "pysähdys", prep: "liuospumppu", valve: "venttiili", other: "muu" },
+    ev_legend: { start: "käynnistys", stop: "pysähdys", prep: "liuospumppu", prerun: "esikäynti", valve: "venttiili", defrost: "sulatus", info: "tila", other: "muu" },
     log_error: "Viimeisin lokin haku epäonnistui: {msg}",
     log_none: "Ei tapahtumia valitulta ajalta.",
     log_total: "{n} riviä tallennettu",
@@ -152,6 +153,13 @@ const VHP_I18N = {
     },
     roles: { hot_gas_t: "kuumakaasun lämpötila", hot_gas_p: "kuumakaasun paine", suction_t: "imukaasun lämpötila", suction_p: "imukaasun paine", liquid_t: "nestelinjan lämpötila", pri_supply: "keruupiirin meno", sec_supply: "lämmityksen meno", compressor: "kompressori", phase: "kompressorin vaihe", dhw_charging: "käyttövesilataus" },
     missing: "Puuttuvat anturit: {list}. Jos ne ovat piilossa, ota ne käyttöön laitteen sivulta (+ entiteettiä ei näytetä).",
+    missing_absent: "Laitteella ei ole näitä antureita: {list}.",
+    disabled: "Käytöstä poistetut anturit, joita kortti käyttäisi: {list}.",
+    enable: "Ota käyttöön",
+    device_page: "Laitteen sivu",
+    enabling: "Otetaan käyttöön…",
+    enabled_wait: "Otettu käyttöön. Home Assistant lataa ViCare-integraation uudelleen noin {s} sekunnin kuluttua, sitten lukemat tulevat näkyviin.",
+    enable_failed: "Käyttöönotto epäonnistui: {msg}",
     no_device: "ViCare-lämpöpumppua ei löytynyt. Valitse laite kortin asetuksista.",
     cfg: {
       device_id: "ViCare-laite",
@@ -253,13 +261,14 @@ const VHP_I18N = {
     scrub: "Point in time",
     trend_refr: "refrigerant",
     trend_water: "water and brine",
+    trend_water_air: "water and air",
     stopped: "Compressor off: values have equalised and are not operating values.",
     log_fetched: "fetched {t}",
     logbook: "Logbook",
     log_short: "Log",
-    ev: { prep: "Brine pump started", start: "Compressor started", stop: "Compressor stopped", valve: "3-way valve", valve_on: "3-way valve to hot water", valve_off: "3-way valve to heating", info: "Brine pump stopped", other: "Other event" },
+    ev: { prep: "Brine pump started", start: "Compressor started", stop: "Compressor stopped", valve: "3-way valve", valve_on: "3-way valve to hot water", valve_off: "3-way valve to heating", info: "Brine pump stopped", defrost: "Defrost", other: "Other event" },
     ev_reason: { on_hyst: "switch-on hysteresis reached", demand: "output demand", off_hyst: "switch-off hysteresis reached", temp_rise: "temperature reached", circuit_change: "hydraulic circuit change", heating: "heating", dhw: "hot water" },
-    ev_legend: { start: "start", stop: "stop", prep: "brine pump", valve: "valve", other: "other" },
+    ev_legend: { start: "start", stop: "stop", prep: "brine pump", prerun: "pre-run", valve: "valve", defrost: "defrost", info: "status", other: "other" },
     log_error: "Last logbook fetch failed: {msg}",
     log_none: "No events in the selected period.",
     log_total: "{n} entries stored",
@@ -324,6 +333,13 @@ const VHP_I18N = {
     },
     roles: { hot_gas_t: "hot gas temperature", hot_gas_p: "hot gas pressure", suction_t: "suction gas temperature", suction_p: "suction gas pressure", liquid_t: "liquid line temperature", pri_supply: "primary circuit supply", sec_supply: "secondary circuit supply", compressor: "compressor", phase: "compressor phase", dhw_charging: "hot water charging" },
     missing: "Missing sensors: {list}. If they are hidden, enable them on the device page (+ entities not shown).",
+    missing_absent: "The device has no sensors for: {list}.",
+    disabled: "Disabled sensors the card would use: {list}.",
+    enable: "Enable",
+    device_page: "Device page",
+    enabling: "Enabling…",
+    enabled_wait: "Enabled. Home Assistant reloads the ViCare integration in about {s} seconds; the readings appear after that.",
+    enable_failed: "Enabling failed: {msg}",
     no_device: "No ViCare heat pump found. Select the device in the card settings.",
     cfg: {
       device_id: "ViCare device",
@@ -525,6 +541,7 @@ const VHP_EV_MARK = {
   prep: `<circle r="3" class="lbm prep"/>`,
   valve: `<rect x="-3.2" y="-3.2" width="6.4" height="6.4" class="lbm valve"/>`,
   info: `<circle r="2.2" class="lbm info"/>`,
+  defrost: `<path d="M0 -4.5V4.5M-3.9 -2.25L3.9 2.25M-3.9 2.25L3.9 -2.25" class="lbm defrost"/>`,
   other: `<path d="M0 -5.5 L5.5 0 L0 5.5 L-5.5 0Z" class="lbm other"/>`,
 };
 const VHP_EV_SYM = Object.fromEntries(Object.entries(VHP_EV_MARK).map(([k, v]) => [k, `<svg width="12" height="12" viewBox="-6 -6 12 12">${v}</svg>`]));
@@ -791,6 +808,85 @@ class VicareHeatpumpCard extends HTMLElement {
   }
 
   /* ----------------------------------------------- entity resolution */
+  /* Disabled entities are not in hass.entities. An administrator can read the full entity registry,
+   * so the card can tell a disabled sensor from one the device does not have, and enable it. */
+  async _checkDisabled() {
+    const hass = this._hass;
+    const devs = this._devices || [];
+    const missing = Object.keys(VHP_ROLES).filter((r) => !this._roles[r] && VHP_ROLES[r].k.length);
+    const sig = devs.join(",") + "|" + missing.join(",");
+    if (this._disSig === sig) return;
+    this._disSig = sig;
+    this._disabled = [];
+    if (!missing.length || !hass?.user?.is_admin || !devs.length) return this._renderFoot?.();
+    try {
+      const reg = (this._reg ||= await hass.callWS({ type: "config/entity_registry/list" }));
+      const out = [];
+      for (const role of missing) {
+        const def = VHP_ROLES[role];
+        for (const k of def.k) {
+          const e = reg.find((x) => x.platform === "vicare" && x.disabled_by && x.translation_key === k && devs.includes(x.device_id) && x.entity_id.startsWith(def.d + "."));
+          if (e) { out.push({ role, entity_id: e.entity_id, device_id: e.device_id }); break; }
+        }
+      }
+      this._disabled = out;
+    } catch (err) {
+      this._disabled = []; // not allowed or not available: the plain list of missing sensors remains
+    }
+    this._footKey = null;
+    this._renderFoot?.();
+  }
+
+  async _enableDisabled() {
+    const i = this._i, list = this._disabled || [];
+    this._footMsg = i.enabling;
+    this._footKey = null;
+    this._renderFoot();
+    try {
+      let delay = 30;
+      for (const d of list) {
+        const r = await this._hass.callWS({ type: "config/entity_registry/update", entity_id: d.entity_id, disabled_by: null });
+        if (r?.reload_delay) delay = r.reload_delay;
+      }
+      this._footMsg = i.enabled_wait.replace("{s}", delay);
+      this._reg = null;
+      this._disabled = [];
+    } catch (err) {
+      this._footMsg = i.enable_failed.replace("{msg}", vhpEsc(err?.message || String(err)));
+    }
+    this._footKey = null;
+    this._renderFoot();
+  }
+
+  _renderFoot() {
+    const el = this.shadowRoot?.getElementById("foot");
+    if (!el || !this._roles) return;
+    const i = this._i;
+    const dis = this._disabled || [];
+    const disRoles = new Set(dis.map((d) => d.role));
+    const name = (r) => i.cfg["r_" + r] || i.roles[r] || r;
+    const missing = VHP_IMPORTANT.filter((r) => !this._roles[r] && !disRoles.has(r) && !(r === "hot_gas_p" && this._roles.liquid_t));
+    const key = JSON.stringify([dis.map((d) => d.entity_id), missing, this._footMsg]);
+    if (key === this._footKey) return;
+    this._footKey = key;
+    let html = "";
+    if (dis.length) {
+      const dev = dis[0].device_id;
+      html += `<div>${vhpEsc(i.disabled.replace("{list}", dis.map((d) => name(d.role)).join(", ")))}
+        <button class="fbtn" id="fenable">${i.enable}</button> <a class="flink" href="/config/devices/device/${encodeURIComponent(dev)}">${i.device_page}</a></div>`;
+    }
+    // with the registry checked, what is left is really missing; otherwise keep the old hint
+    if (missing.length) html += `<div>${vhpEsc((this._reg ? i.missing_absent : i.missing).replace("{list}", missing.map(name).join(", ")))}</div>`;
+    if (this._footMsg) html += `<div class="fmsg">${this._footMsg}</div>`;
+    el.innerHTML = html;
+    el.querySelector("#fenable")?.addEventListener("click", () => this._enableDisabled());
+    el.querySelector(".flink")?.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      history.pushState(null, "", ev.currentTarget.getAttribute("href"));
+      window.dispatchEvent(new CustomEvent("location-changed"));
+    });
+  }
+
   _resolve() {
     const hass = this._hass;
     this._entsRef = hass.entities;
@@ -850,6 +946,7 @@ class VicareHeatpumpCard extends HTMLElement {
     for (const [role, eid] of Object.entries(this._config.entities || {})) if (eid) roles[role] = eid;
     if (roles.circ_supply && roles.circ_supply === roles.sec_supply) delete roles.circ_supply;
     this._roles = roles;
+    this._checkDisabled();
     const yes = (v) => v === true || v === "yes" || v === "true" || v === "on";
     const no = (v) => v === false || v === "no" || v === "false" || v === "off";
     const b = this._config.buffer, h = this._config.heater;
@@ -1725,6 +1822,7 @@ class VicareHeatpumpCard extends HTMLElement {
     const $ = (id) => this.shadowRoot.getElementById(id);
     if (!this._device && !Object.keys(this._roles || {}).length) {
       $("foot").textContent = i.no_device;
+      this._footKey = null;
       return;
     }
     const f = (v, u = "°C") => (isFinite(v) ? `${this._fmt(v)} ${u}` : "–");
@@ -1905,14 +2003,13 @@ class VicareHeatpumpCard extends HTMLElement {
       if ($("info").innerHTML !== html) $("info").innerHTML = html;
     } else $("info").hidden = true;
 
-    const missing = VHP_IMPORTANT.filter((r) => !this._roles[r] && !(r === "hot_gas_p" && this._roles.liquid_t)).map((r) => i.roles[r] || r);
+
     this.shadowRoot.querySelectorAll("#diagram .val[data-role], #diagram .sm[data-role]").forEach((g) => {
       const r = g.dataset.role;
       if (r !== "subcooling" && r !== "superheat") g.style.display = this._roles[r] ? "" : "none";
     });
-    const foot = missing.length ? i.missing.replace("{list}", missing.join(", ")) : "";
-    this._set("foot", foot);
-    $("foot").hidden = !foot;
+    this._renderFoot();
+    $("foot").hidden = !$("foot").innerHTML;
 
     this._renderLog();
     if (this._phOpen) this._renderPH();
@@ -2022,7 +2119,7 @@ class VicareHeatpumpCard extends HTMLElement {
     const water = temps.filter((s) => !VHP_REFR_ROLES.includes(s.role));
     const tempCharts =
       (refr.length || !water.length ? chart(refr, water.length ? 84 : 150, `°C · ${i.trend_refr}`, "temp refr", 0) : "") +
-      (water.length ? chart(water, refr.length ? 108 : 150, `°C · ${i.trend_water}`, "temp water", 0) : "");
+      (water.length ? chart(water, refr.length ? 108 : 150, `°C · ${this._air ? i.trend_water_air : i.trend_water}`, "temp water", 0) : "");
     charts.innerHTML =
       tempCharts +
       (press.length ? chart(press.map((s) => ({ ...s, color: s.color })), 60, "bar", "press", 0, true) : "") +
@@ -2051,7 +2148,12 @@ class VicareHeatpumpCard extends HTMLElement {
       .join("");
     const evLegend =
       this._config.show_logbook && this._logEid
-        ? ["start", "stop", "prep", "valve", "other"].map((k) => `<span class="bl"><svg width="10" height="10" viewBox="-5 -5 10 10">${VHP_EV_MARK[k]}</svg>${this._i.ev_legend[k]}</span>`).join("")
+        ? (() => {
+            // only the kinds that occur (the newer units' message log has defrost and info too)
+            const have = new Set(this._events().map((e) => e.k));
+            const ks = ["start", "stop", "prep", "valve", "defrost", "info", "other"].filter((k) => have.has(k));
+            return (ks.length ? ks : ["start", "stop", "prep", "valve", "other"]).map((k) => `<span class="bl"><svg width="10" height="10" viewBox="-5 -5 10 10">${VHP_EV_MARK[k]}</svg>${this._air && k === "prep" ? this._i.ev_legend.prerun : this._i.ev_legend[k]}</span>`).join("");
+          })()
         : "";
     return {
       svg: `<svg class="band" width="${W}" height="16" viewBox="0 0 ${W} 16"><rect x="${pad.l}" y="2" width="${W - pad.l - pad.r}" height="12" class="bandbg" rx="2"/>${rects}<line class="cursor" x1="0" x2="0" y1="0" y2="16"/></svg>`,
@@ -2622,6 +2724,7 @@ svg.melting .melt { display: inline; fill: #64b5f6; transform-box: fill-box; }
 input[type=range] { width: 100%; margin: 6px 0 0; accent-color: var(--primary-color); }
 .lbm { stroke-width: 1.2; }
 .lbm.start { fill: var(--primary-text-color); } .lbm.stop { fill: var(--card-background-color, #fff); stroke: var(--primary-text-color); }
+.lbm.defrost { fill: none; stroke: #42a5f5; stroke-width: 1.6; stroke-linecap: round; }
 .lbm.prep { fill: #4fb3bf; } .lbm.valve { fill: #8e5bd8; } .lbm.info { fill: var(--secondary-text-color); } .lbm.other { fill: var(--error-color, #db4437); stroke: var(--card-background-color, #fff); }
 .lbline { stroke: var(--error-color, #db4437); stroke-width: 1.2; stroke-dasharray: 3 3; }
 .blsep { width: 1px; align-self: stretch; background: var(--divider-color, rgba(127,127,127,.3)); }
@@ -2652,7 +2755,11 @@ ul.logl li.other .lbx { color: var(--error-color, #db4437); font-weight: 500; }
 .lbs { display: flex; } .lbtm { color: var(--secondary-text-color); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .logerr { font-size: 12px; color: var(--warning-color, #ffa600); margin-top: 4px; }
 .msg { font-size: 13px; color: var(--secondary-text-color); padding: 24px 0; text-align: center; }
-.foot { font-size: 12px; color: var(--secondary-text-color); margin-top: 8px; }
+.foot { font-size: 12px; color: var(--secondary-text-color); margin-top: 8px; display: grid; gap: 4px; }
+.fbtn { font: inherit; font-size: 12px; margin-left: 6px; padding: 2px 10px; border-radius: 12px; border: 1px solid var(--primary-color); background: transparent; color: var(--primary-color); cursor: pointer; }
+.fbtn:hover { background: color-mix(in srgb, var(--primary-color) 12%, transparent); }
+.flink { color: var(--primary-color); margin-left: 4px; }
+.fmsg { color: var(--primary-text-color); }
 .ph { margin-top: 8px; border-top: 1px solid var(--divider-color, rgba(127,127,127,.25)); padding-top: 10px; }
 .phhead { font-size: 14px; font-weight: 500; color: var(--primary-text-color); margin-bottom: 4px; }
 .phhead .m { color: var(--mc); }

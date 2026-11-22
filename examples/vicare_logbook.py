@@ -1,22 +1,31 @@
 #!/usr/bin/env python3
 """ViCare logbook for Home Assistant (vicare-heatpump-card).
 
-Fetches the heat pump's logbook (device.messages.logbook; the unit keeps only the
-5 newest entries) from the Viessmann cloud using the ViCare integration's own
-token, appends new entries to /config/vicare_logbook.csv and prints JSON for a
-Home Assistant command_line sensor.
+Fetches the heat pump's logbook from the Viessmann cloud using the ViCare
+integration's own token, appends new entries to /config/vicare_logbook.csv and
+prints JSON for a Home Assistant command_line sensor.
+
+Two kinds of units:
+- Vitotronic 200 (WO1C) units (Vitocal 300-G, 333-G, older 200-S/222-S) have a real
+  logbook (device.messages.logbook; the unit keeps only the 5 newest entries).
+- Newer units (Vitocal 250-A, 252-A, 200-A, 151-A, newer 222-S ...) have no logbook,
+  only the currently active messages (device.messages.status/info/service/error.raw).
+  The script logs when a message appears (with the unit's own time stamp) and when
+  an error or service message clears (time of the run that noticed it).
+The script finds out which one it is on the first run.
 
 One run = one API call (plus one installation lookup on the first run).
 The token is never printed or stored.
 
 Usage: python3 vicare_logbook.py [--lang en|fi]
 """
-import csv, json, os, sys, time, urllib.error, urllib.parse, urllib.request
+import calendar, csv, json, os, sys, time, urllib.error, urllib.parse, urllib.request
 
 API = "https://api.viessmann-climatesolutions.com"
 CFG = next((d for d in ("/config", "/homeassistant") if os.path.isdir(os.path.join(d, ".storage"))), "/config")
 CSV_FILE = os.path.join(CFG, "vicare_logbook.csv")
 IDS_FILE = os.path.join(CFG, ".storage", "vicare_logbook_ids.json")
+MSG_FILE = os.path.join(CFG, ".storage", "vicare_logbook_messages.json")  # active messages of the last run
 FIELDS = ["time", "actor", "event", "state_machine", "circuit", "status", "info", "interpretation"]
 SHOW = 15  # rows in the sensor attribute
 
@@ -68,8 +77,74 @@ TEXT = {
 }
 
 
+# Messages of the newer units. Status texts from the Vitocal 250-A(H) service manual (Statusmeldungen).
+# (kind for the card's timeline, circuit, valve direction)
+MSG_KIND = {
+    "S.123": ("stop", None, None), "S.124": ("prep", None, None), "S.125": ("start", "heating", None),
+    "S.126": ("start", "cooling", None), "S.127": ("defrost", None, None), "S.128": ("defrost", None, None),
+    "S.176": ("defrost", None, None), "S.115": ("valve", None, 1), "S.116": ("valve", None, 0),
+    "S.117": ("valve", None, 0), "S.118": ("valve", None, 0),
+}
+MSG_TEXT = {
+    "en": {
+        "S.60": "Summer mode active (outdoor temperature economy)", "S.74": "Heating suppressed", "S.75": "DHW circulation pump active",
+        "S.115": "4/3-way valve to hot water", "S.116": "4/3-way valve to heating/cooling circuit 1", "S.117": "4/3-way valve to heating/cooling circuit 2",
+        "S.118": "4/3-way valve to internal buffer / bypass", "S.120": "Smart Grid: normal operation", "S.121": "Smart Grid: recommended operation",
+        "S.122": "Smart Grid: forced operation", "S.123": "Heat pump off", "S.124": "Heat pump pre-run", "S.125": "Heat pump heating",
+        "S.126": "Heat pump cooling", "S.127": "Heat pump preparing defrost", "S.128": "Heat pump defrosting", "S.129": "Heat pump post-run",
+        "S.130": "Electric booster heater off", "S.134": "4/3-way valve idle", "S.135": "4/3-way valve in defrost position",
+        "S.136": "4/3-way valve to space heating/cooling", "S.161": "Filling active", "S.162": "Venting active",
+        "S.163": "Heat pump system status: inactive", "S.164": "Heat pump system status: maintenance standby",
+        "S.165": "Heat pump system status: control", "S.167": "Actuator test active", "S.176": "Heat pump control: defrost requested",
+        "S.186": "Frost protection DHW cylinder active", "S.187": "Frost protection heat pump active",
+        "S.188": "Frost protection buffer cylinder active", "S.189": "Frost protection integrated buffer active",
+        "_status": "Status", "_info": "Info", "_service": "Service message", "_error": "Fault", "_warning": "Warning",
+        "_cleared": "cleared",
+    },
+    "fi": {
+        "S.60": "Kesäkäyttö (ulkolämpötilan säästötoiminto)", "S.74": "Lämmitys estetty", "S.75": "Käyttöveden kiertopumppu käy",
+        "S.115": "4/3-tieventtiili käyttövedelle", "S.116": "4/3-tieventtiili lämmitys-/jäähdytyspiirille 1", "S.117": "4/3-tieventtiili lämmitys-/jäähdytyspiirille 2",
+        "S.118": "4/3-tieventtiili sisäiseen puskuriin / ohitukselle", "S.120": "Smart Grid: normaali käyttö", "S.121": "Smart Grid: suositeltu käyttö",
+        "S.122": "Smart Grid: pakotettu käyttö", "S.123": "Lämpöpumppu pois", "S.124": "Lämpöpumpun esikäyntivaihe", "S.125": "Lämpöpumppu lämmittää",
+        "S.126": "Lämpöpumppu jäähdyttää", "S.127": "Lämpöpumppu valmistelee sulatusta", "S.128": "Lämpöpumppu sulattaa", "S.129": "Lämpöpumpun jälkikäyntivaihe",
+        "S.130": "Sähkövastus pois", "S.134": "4/3-tieventtiili lepoasennossa", "S.135": "4/3-tieventtiili sulatusasennossa",
+        "S.136": "4/3-tieventtiili tilalämmitykselle/-jäähdytykselle", "S.161": "Täyttö käynnissä", "S.162": "Ilmaus käynnissä",
+        "S.163": "Lämpöpumpun järjestelmätila: ei aktiivinen", "S.164": "Lämpöpumpun järjestelmätila: huoltovalmius",
+        "S.165": "Lämpöpumpun järjestelmätila: säätö", "S.167": "Toimilaitetesti käynnissä", "S.176": "Lämpöpumpun säätö: sulatusta pyydetty",
+        "S.186": "Käyttövesivaraajan jäätymissuojaus", "S.187": "Lämpöpumpun jäätymissuojaus",
+        "S.188": "Puskurivaraajan jäätymissuojaus", "S.189": "Sisäisen puskurin jäätymissuojaus",
+        "_status": "Tila", "_info": "Info", "_service": "Huoltoviesti", "_error": "Vika", "_warning": "Varoitus",
+        "_cleared": "poistui",
+    },
+}
+MSG_PRIOS = ("status", "info", "service", "maintenance", "warning", "error")
+IMPORTANT_PRIOS = ("service", "maintenance", "warning", "error")
+
+
+def is_msg(r):
+    return r.get("state_machine") == "messages"
+
+
+def msg_interpret(r, lang=None):
+    """(kind, text, circuit, valve direction) for a message row."""
+    T = MSG_TEXT[lang or LANG]
+    code, prio, on = r["event"], r["actor"], r["status"] == "1"
+    text = T.get(code) or f"{T.get('_' + prio, prio)} {code}"
+    if code in T:
+        text = f"{code} {text}"
+    if not on:
+        return "info", f"{text} ({T['_cleared']})", None, None
+    if prio in IMPORTANT_PRIOS:
+        return "other", text, None, None  # faults and service messages are reported
+    k, circ, o = MSG_KIND.get(code, ("info", None, None))
+    return k, text, circ, o
+
+
 def classify(r):
     """(kind, reason key or raw event, circuit key or raw, on) for a row."""
+    if is_msg(r):
+        k, text, circ, o = msg_interpret(r)
+        return (k, None, circ, o)
     a, st, ev = r["actor"], r["status"], r["event"]
     valve = "VENTIL" in a.upper() or "UMSCHALT" in a.upper()
     ons = ON if valve else ("100",)  # the valve reports 1/0, others 100/0
@@ -91,7 +166,10 @@ def classify(r):
 
 
 def interpret(r, lang=None):
-    """(kind, text) for a row; kind is prep/start/stop/valve/info/other."""
+    """(kind, text) for a row; kind is prep/start/stop/valve/defrost/info/other."""
+    if is_msg(r):
+        k, text, _, _ = msg_interpret(r, lang)
+        return k, text
     T = TEXT[lang or LANG]
     k, reason, circ, on = classify(r)
     if k == "other":
@@ -153,13 +231,85 @@ def device_ids(token):
     raise RuntimeError("no installation or gateway found")
 
 
-def fetch_entries(token):
+def device_path(ids):
+    return f"/iot/v2/features/installations/{ids['installation']}/gateways/{ids['gateway']}/devices/{ids['device']}/features"
+
+
+def save_ids(ids):
+    with open(IDS_FILE, "w") as f:
+        json.dump(ids, f)
+
+
+def fetch_rows(token):
+    """New-format rows from the logbook, or from the active messages on units without one."""
     ids = device_ids(token)
-    path = (f"/iot/v2/features/installations/{ids['installation']}/gateways/{ids['gateway']}"
-            f"/devices/{ids['device']}/features/device.messages.logbook")
-    feat = get(path, token)
-    feat = feat.get("data", feat)
-    return feat.get("properties", {}).get("entries", {}).get("value", [])
+    if ids.get("mode") == "logbook":  # once found, a failing call is an error, not a reason to switch
+        feat = get(device_path(ids) + "/device.messages.logbook", token)
+        feat = feat.get("data", feat)
+        return [to_row(e) for e in feat.get("properties", {}).get("entries", {}).get("value") or []]
+    if ids.get("mode") != "messages":
+        try:
+            feat = get(device_path(ids) + "/device.messages.logbook", token)
+            feat = feat.get("data", feat)
+            entries = feat.get("properties", {}).get("entries", {}).get("value")
+            if entries is not None:
+                if ids.get("mode") != "logbook":
+                    save_ids({**ids, "mode": "logbook"})
+                return [to_row(e) for e in entries]
+        except RuntimeError as exc:
+            if not str(exc).startswith(("API error 404", "API error 400")):
+                raise
+        save_ids({**ids, "mode": "messages"})
+    return message_rows(get(device_path(ids), token).get("data", []))
+
+
+def local_time(ts):
+    """ISO UTC time stamp of a message -> local wall time of Home Assistant."""
+    try:
+        t = calendar.timegm(time.strptime(ts[:19], "%Y-%m-%dT%H:%M:%S"))
+    except ValueError:
+        return ts[:19].replace("T", " ")
+    try:
+        from zoneinfo import ZoneInfo
+        from datetime import datetime, timezone
+        with open(os.path.join(CFG, ".storage", "core.config"), encoding="utf-8") as f:
+            tz = json.load(f)["data"]["time_zone"]
+        return datetime.fromtimestamp(t, timezone.utc).astimezone(ZoneInfo(tz)).strftime("%Y-%m-%d %H:%M:%S")
+    except Exception:
+        return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t))
+
+
+def msg_row(code, prio, t, on):
+    r = {"time": t, "actor": prio, "event": code, "state_machine": "messages", "circuit": "", "status": "1" if on else "0", "info": ""}
+    r["interpretation"] = interpret(r)[1]
+    return r
+
+
+def message_rows(features):
+    """Rows for messages that appeared since the last run, and for errors and service messages that cleared."""
+    active = {}
+    for f in features:
+        name = f.get("feature", "")
+        if not (name.startswith("device.messages.") and name.endswith(".raw")):
+            continue
+        for e in (f.get("properties", {}).get("entries", {}).get("value") or []):
+            code = e.get("errorCode") or e.get("code")
+            if not code:
+                continue
+            prio = e.get("priority") or name.split(".")[2]
+            ts = e.get("timestamp") or ""
+            active[f"{code}|{ts}"] = [code, prio, ts]
+    try:
+        with open(MSG_FILE) as fh:
+            prev = json.load(fh)
+    except (OSError, ValueError):
+        prev = {}
+    rows = [msg_row(code, prio, local_time(ts), True) for k, (code, prio, ts) in active.items() if k not in prev]
+    now = local_time(time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()))
+    rows += [msg_row(code, prio, now, False) for k, (code, prio, ts) in prev.items() if k not in active and prio in IMPORTANT_PRIOS]
+    with open(MSG_FILE, "w") as fh:
+        json.dump(active, fh)
+    return rows
 
 
 def to_row(e):
@@ -190,6 +340,13 @@ def card_events(rows):
         if r["time"] < since:
             continue
         k, reason, circ, on = classify(r)
+        if is_msg(r):
+            # messages carry their text; the card shows x for them
+            e = {"t": r["time"].replace(" ", "T"), "k": k, "x": interpret(r)[1]}
+            if k == "valve":
+                e["o"] = on
+            out.append(e)
+            continue
         # The card translates the texts itself: r = reason, c = circuit, o = valve direction.
         e = {"t": r["time"].replace(" ", "T"), "k": k, "r": reason}
         if circ:
@@ -218,6 +375,7 @@ def load_csv():
     if rows and "aika" in rows[0]:  # file from an earlier (Finnish) version: rewrite with English columns
         rows = [{OLD_FIELDS.get(k, k): v for k, v in r.items()} for r in rows]
         for r in rows:
+            r.setdefault("state_machine", "")
             r["interpretation"] = interpret(r)[1]
         with open(CSV_FILE, "w", newline="", encoding="utf-8-sig") as f:
             w = csv.DictWriter(f, fieldnames=FIELDS, delimiter=";", extrasaction="ignore")
@@ -252,9 +410,9 @@ def describe(r):
 def main():
     out = {"new": 0, "error": None, "unknown": []}
     try:
-        entries = fetch_entries(read_token())
+        rows_now = fetch_rows(read_token())
         known = {key(r) for r in load_csv()}
-        new = sorted((r for r in map(to_row, entries) if key(r) not in known), key=lambda r: r["time"])
+        new = sorted((r for r in rows_now if key(r) not in known), key=lambda r: r["time"])
         if new:
             append_csv(new)
         out["new"] = len(new)

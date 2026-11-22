@@ -88,11 +88,22 @@
     entities[id] = { entity_id: id, platform: "vicare", translation_key: tk, device_id: d2 };
     states[id] = { entity_id: id, state: String(typeof v[tk] === "number" ? v[tk].toFixed(1) : v[tk]), attributes: { unit_of_measurement: u, friendly_name: tk }, last_changed: new Date(now).toISOString() };
   }
+  // ?disabled=1: some sensors are disabled in the entity registry (as ViCare ships them)
+  const disabled = [];
+  if (Q.get("disabled") === "1")
+    for (const tk of ["hot_gas_pressure", "condenser_subcooling_temperature", "evaporator_overheat_temperature"]) {
+      const id = `sensor.cu401b_g_${tk}`;
+      disabled.push({ entity_id: id, platform: "vicare", translation_key: tk, device_id: dev, disabled_by: "integration" });
+      delete entities[id]; delete states[id];
+    }
   window.mockHass = {
+    user: { is_admin: true },
     states, entities, devices: { [dev]: { id: dev, name: "CU401B G", config_entries: ["ce1"] }, dev2: { id: "dev2", name: "Outdoor unit", config_entries: ["ce1"] } },
     locale: { language: new URLSearchParams(location.search).get("lang") || "en", number_format: "language" }, language: new URLSearchParams(location.search).get("lang") || "en", config: { time_zone: "Europe/Helsinki" },
     themes: { darkMode: false },
     callWS: async (msg) => {
+      if (msg.type === "config/entity_registry/list") return [...Object.values(entities), ...disabled];
+      if (msg.type === "config/entity_registry/update") return { entity_entry: { entity_id: msg.entity_id }, reload_delay: 30 };
       const a = Date.parse(msg.start_time), b = Date.parse(msg.end_time), out = {};
       for (const id of msg.entity_ids) {
         const tk = entities[id]?.translation_key; if (!tk) continue;
