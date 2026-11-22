@@ -153,47 +153,22 @@ views:
     column_span: 3
     cards:
     - type: heading
-      heading: Weekly summary
-      icon: mdi:table-large
-    - type: heading
-      heading: One row per finished week (means while running). Added every Monday.
-      heading_style: subtitle
-    - type: markdown
-      content: '{%- set s = ''sensor.hp_weekly_summary'' %}
-
-        {%- macro f(v) %}{{ ''%.1f'' % v if v is number else ''–'' }}{% endmacro %}
-
-        | Week | Brine in | min | Brine out | min | Supply | Return | Heating h | DHW h | Heating run | DHW run |
-
-        |:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
-
-        {%- for r in (state_attr(s, ''weeks'') or [])[::-1][:26] %}
-
-        | {{ r.week }} | {{ f(r.brine_in) }} | {{ f(r.brine_in_min) }} | {{ f(r.brine_out) }} | {{ f(r.brine_out_min) }} |
-        {{ f(r.supply) }} | {{ f(r[''return'']) }} | {{ f(r.heating_h) }} | {{ f(r.dhw_h) }} | {{ f(r.heating_run) }} | {{
-        f(r.dhw_run) }} |
-
-        {%- else %}
-
-        | First row on Monday | | | | | | | | | | |
-
-        {%- endfor %}
-
-        '
-  - type: grid
-    column_span: 3
-    cards:
-    - type: heading
       heading: Weekly history
       icon: mdi:chart-timeline-variant
     - type: heading
-      heading: A finished week is shown at the following Monday.
+      heading: A finished week is shown at the following Monday. Choose the period above the charts (‹ › steps back and forward).
       heading_style: subtitle
+    - type: energy-date-selection
+      collection_key: energy_heatpump_history
+      disable_compare: true
+      grid_options:
+        columns: full
     - type: statistics-graph
       title: Supply and return during heating
       chart_type: line
       period: week
-      days_to_show: 365
+      energy_date_selection: true
+      collection_key: energy_heatpump_history
       stat_types:
       - mean
       entities:
@@ -205,7 +180,8 @@ views:
       title: Brine while the compressor runs
       chart_type: line
       period: week
-      days_to_show: 365
+      energy_date_selection: true
+      collection_key: energy_heatpump_history
       stat_types:
       - mean
       entities:
@@ -221,7 +197,8 @@ views:
       title: Average run length
       chart_type: bar
       period: week
-      days_to_show: 365
+      energy_date_selection: true
+      collection_key: energy_heatpump_history
       stat_types:
       - mean
       entities:
@@ -233,7 +210,8 @@ views:
       title: Runtime per week
       chart_type: bar
       period: week
-      days_to_show: 365
+      energy_date_selection: true
+      collection_key: energy_heatpump_history
       stat_types:
       - mean
       entities:
@@ -247,7 +225,8 @@ views:
       title: Weekly brine minimum, ViCare sensors
       chart_type: line
       period: week
-      days_to_show: 365
+      energy_date_selection: true
+      collection_key: energy_heatpump_history
       stat_types:
       - min
       entities:
@@ -259,7 +238,8 @@ views:
       title: Compressor starts and hours per week
       chart_type: bar
       period: week
-      days_to_show: 365
+      energy_date_selection: true
+      collection_key: energy_heatpump_history
       stat_types:
       - change
       entities:
@@ -271,10 +251,45 @@ views:
       title: Outside temperature per week
       chart_type: line
       period: week
-      days_to_show: 365
+      energy_date_selection: true
+      collection_key: energy_heatpump_history
       stat_types:
       - mean
       - min
       entities:
       - entity: sensor.cu401b_g_outside_temperature
         name: Outside
+  - type: grid
+    column_span: 3
+    cards:
+    - type: heading
+      heading: Weekly summary
+      icon: mdi:table-large
+    - type: heading
+      heading: One row per finished week (means while running). Added every Monday; the newest on top, scroll for older weeks (80 weeks kept).
+      heading_style: subtitle
+    - type: markdown
+      grid_options:
+        columns: full
+        rows: 9
+      content: '{%- set s = ''sensor.hp_weekly_summary'' %}
+
+        {%- macro f(v) %}{{ ''%.1f'' % v if v is number else ''–'' }}{% endmacro %}
+
+        | Week | Brine in | min | Brine out | min | Supply | Return | Heating h | DHW h | Heating run | DHW run |
+
+        |:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+
+        {%- for r in (state_attr(s, ''weeks'') or [])[::-1] %}
+
+        | {{ r.week }} | {{ f(r.brine_in) }} | {{ f(r.brine_in_min) }} | {{ f(r.brine_out) }} | {{ f(r.brine_out_min) }} |
+        {{ f(r.supply) }} | {{ f(r[''return'']) }} | {{ f(r.heating_h) }} | {{ f(r.dhw_h) }} | {{ f(r.heating_run) }} | {{
+        f(r.dhw_run) }} |
+
+        {%- else %}
+
+        | First row on Monday | | | | | | | | | | |
+
+        {%- endfor %}
+
+        '

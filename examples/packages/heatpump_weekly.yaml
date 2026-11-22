@@ -422,4 +422,4 @@ template:
           weeks: >-
             {%- set lst = this.attributes.weeks if (this is defined and this.attributes.weeks is defined) else [] -%}
             {%- set row = {'week': (now() - timedelta(days=1)).strftime('%G-W%V'), 'brine_in': states('sensor.hp_brine_in_last_week') | float(none), 'brine_in_min': states('sensor.hp_brine_in_minimum_last_week') | float(none), 'brine_out': states('sensor.hp_brine_out_last_week') | float(none), 'brine_out_min': states('sensor.hp_brine_out_minimum_last_week') | float(none), 'supply': states('sensor.hp_heating_supply_last_week') | float(none), 'return': states('sensor.hp_heating_return_last_week') | float(none), 'heating_h': states('sensor.hp_runtime_heating_last_week') | float(none), 'dhw_h': states('sensor.hp_runtime_dhw_last_week') | float(none), 'heating_run': states('sensor.hp_heating_run_last_week') | float(none), 'dhw_run': states('sensor.hp_dhw_run_last_week') | float(none)} -%}
-            {{ (lst + [row])[-104:] }}
+            {{ (lst + [row])[-80:] }}
