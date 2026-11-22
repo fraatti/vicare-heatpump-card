@@ -80,7 +80,6 @@ Copy the packages to `/config/packages` (`homeassistant: packages: !include_dir_
 | File | What it does |
 |---|---|
 | `packages/heatpump_tc_t0.yaml` | tc and t0 as sensors (history and statistics) |
-| `packages/heatpump_dhw.yaml` | Lift tc − t0 and the highest lift and pressure of every hot water run |
 | `packages/heatpump_weekly.yaml` | Weekly means during runs, run lengths and runtimes, kept in long-term statistics |
 | `packages/heatpump_logbook.yaml` + `vicare_logbook.py` | Keeps the device logbook (`/config/vicare_logbook.csv`) and notifies about unusual entries. On units without a logbook it logs the device messages instead (fault and service messages are notified, also when they clear). Uses the ViCare integration's own token, which is never printed or stored; 48 API calls a day. Message times are taken as UTC and shown in Home Assistant's time zone. Copy `vicare_codes.json` next to the script for the texts of about 1 850 message codes (from [open3e](https://github.com/open3e/open3e), Apache-2.0) |
 | `heatpump-dashboard.yaml` | Example dashboard with the card, the packages and history views |
@@ -121,7 +120,7 @@ Kortti näyttää Viessmann-lämpöpumpun kylmäainepiirin samaan tapaan kuin la
 
 **Lämmönjako.** Asetuksissa valitaan lattialämmitys tai patterit, puskurivaraaja (`buffer`), shuntti (`mixer`) ja sähkövastus (`heater`). Osiosta *Anturit* jokaisen arvon voi vaihtaa omaan entiteettiin, myös ilman ViCare-integraatiota.
 
-**Lisäosat** (`examples/`): tc/t0-anturit, käyttövesijaksojen nostokorkeus, viikkotilastot, tapahtumaloki ja valmis kojelauta. Tapahtumaloki toimii Vitotronic 200 (WO1C) -koneissa (300-G, 333-G, vanhemmat 200-S/222-S) laitteen omasta lokista; uudemmissa (250-A, 252-A, 200-A, 151-A) skripti kirjaa laitteen tila-, info-, huolto- ja vikaviestit (esim. S.125 lämmitys, S.128 sulatus) niiden ilmestyessä. Kopioi `vicare_codes.json` skriptin viereen, niin noin 1 850 koodille tulee selitys (yleisimmät suomeksi, muut englanniksi). Entiteetti-ID:t ovat Vitocal 333-G:n; vaihda ne omaan laitteeseen sopiviksi.
+**Lisäosat** (`examples/`): tc/t0-anturit, viikkotilastot, tapahtumaloki ja valmis kojelauta. Tapahtumaloki toimii Vitotronic 200 (WO1C) -koneissa (300-G, 333-G, vanhemmat 200-S/222-S) laitteen omasta lokista; uudemmissa (250-A, 252-A, 200-A, 151-A) skripti kirjaa laitteen tila-, info-, huolto- ja vikaviestit (esim. S.125 lämmitys, S.128 sulatus) niiden ilmestyessä. Kopioi `vicare_codes.json` skriptin viereen, niin noin 1 850 koodille tulee selitys (yleisimmät suomeksi, muut englanniksi). Entiteetti-ID:t ovat Vitocal 333-G:n; vaihda ne omaan laitteeseen sopiviksi.
 
 Split-mallin sisä- ja ulkoyksikkö näkyvät ViCaressa kahtena laitteena; kortti yhdistää niiden anturit itse, tai ulkoyksikön voi valita asetuksesta *Muut laitteet*.
 

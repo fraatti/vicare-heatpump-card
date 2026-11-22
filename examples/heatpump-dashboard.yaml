@@ -40,9 +40,6 @@ views:
     - type: tile
       entity: sensor.cu401b_g_dhw_storage_top_temperature
       name: DHW cylinder
-    - type: tile
-      entity: sensor.hp_dhw_run_max_lift
-      name: Lift, last hot water run
   - type: grid
     cards:
     - type: heading
@@ -90,35 +87,6 @@ views:
         name: Runtime, hot water
       - entity: sensor.hp_runtime_total_this_week
         name: Runtime, total
-  - type: grid
-    cards:
-    - type: heading
-      heading: Hot water runs
-      icon: mdi:water-boiler
-    - type: heading
-      heading: Highest tc − t0 per run. Limit 62 K (parameter 5080).
-      heading_style: subtitle
-    - type: markdown
-      content: '{%- set s = ''sensor.hp_dhw_run_max_lift'' %}
-
-        {%- set limit = (state_attr(s, ''limit'') or 62) | float %}
-
-        | Ended | tc − t0 | Pressure |
-
-        |:--|--:|--:|
-
-        {%- for r in (state_attr(s, ''runs'') or [])[::-1][:14] %}
-
-        | {{ r.end }} | {{ ''**%.1f K** ⚠️'' % r.lift if r.lift >= limit - 0.5 else ''%.1f K'' % r.lift }} | {{ ''%.1f bar''
-        % r.pressure if r.pressure is number else ''–'' }} |
-
-        {%- else %}
-
-        | No runs yet | | |
-
-        {%- endfor %}
-
-        '
   - type: grid
     cards:
     - type: heading
@@ -287,16 +255,6 @@ views:
         name: From ground
       - entity: sensor.cu401b_g_primary_circuit_return_temperature
         name: To ground
-    - type: statistics-graph
-      title: Highest lift tc − t0 per day (limit 62 K)
-      chart_type: line
-      period: day
-      days_to_show: 60
-      stat_types:
-      - max
-      entities:
-      - entity: sensor.hp_lift_tc_t0
-        name: tc − t0
     - type: statistics-graph
       title: Compressor starts and hours per week
       chart_type: bar
