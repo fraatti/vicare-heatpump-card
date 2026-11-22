@@ -6,6 +6,7 @@ All notable changes to the ViCare Heat Pump Card. Versions follow [semantic vers
 
 ### Changed
 - Example dashboard: the weekly charts follow one date picker (week, month, year, ‹ › to step back) instead of a fixed 365 days; the weekly table is full width below the charts and scrolls for older weeks.
+- Example dashboard: the brine chart uses colour pairs (blue from the ground, red to the ground; dark mean, light minimum).
 - `heatpump_weekly.yaml` keeps 80 weeks instead of 104, so the list stays under Home Assistant's 16 kB attribute limit for the recorder.
 
 ## 1.6.0 – 2026-11-22

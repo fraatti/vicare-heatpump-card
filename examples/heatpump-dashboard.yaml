@@ -185,14 +185,19 @@ views:
       stat_types:
       - mean
       entities:
+      # pairs: blue = from the ground, red = to the ground; dark = mean, light = minimum
       - entity: sensor.hp_brine_in_last_week
         name: From ground, mean
+        color: '#1f5fbf'
       - entity: sensor.hp_brine_in_minimum_last_week
-        name: From ground, minimum
+        name: From ground, min
+        color: '#8fb4ea'
       - entity: sensor.hp_brine_out_last_week
         name: To ground, mean
+        color: '#d1495b'
       - entity: sensor.hp_brine_out_minimum_last_week
-        name: To ground, minimum
+        name: To ground, min
+        color: '#f2a7b0'
     - type: statistics-graph
       title: Average run length
       chart_type: bar
