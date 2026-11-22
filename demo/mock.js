@@ -12,7 +12,7 @@
     domestic_hot_water_charging: ["binary_sensor"], dhw_storage_top_temperature: ["sensor", "°C"], cop_heating: ["sensor"],
     cop_dhw: ["sensor"], compressor_starts: ["sensor"],
     buffer_main_temperature: ["sensor", "°C"], supply_temperature: ["sensor", "°C"],
-    heater_power: ["sensor", "kW"], mixer_position: ["sensor", "%"], circuit_pump_speed: ["sensor", "%"], fan_speed: ["sensor", "%"],
+    heater_power: ["sensor", "kW"], mixer_position: ["sensor", "%"], circuit_pump_speed: ["sensor", "%"], fan_speed: ["sensor", "%"], compressor_modulation: ["sensor", "%"], eev_position: ["sensor", "%"],
   };
   if (AIR) delete R.primary_circuit_return_temperature; // an air source unit has no brine return
   const cyc = 90 * 60000, onFor = 50 * 60000;
@@ -29,14 +29,14 @@
       circulation_pump: "on", domestic_hot_water_circulation_pump: "off", compressor_phase: on ? "heating" : prep ? "preparing" : "pause",
       domestic_hot_water_charging: "off", dhw_storage_top_temperature: 45.9, cop_heating: 4.6, cop_dhw: 3.4, compressor_starts: 40654,
       buffer_main_temperature: on ? 31 + 3 * k : 33 - 3 * off, supply_temperature: 29.5, heater_power: on && k > 0.8 ? 3 : 0, mixer_position: 42, circuit_pump_speed: 68,
-      fan_speed: on ? 45 : 0,
+      fan_speed: on ? 45 : 0, compressor_modulation: on ? 40 + 35 * k : 0, eev_position: on ? 34 : 0,
     };
   };
   // ?phase=defrost|preparing_defrost|passive_defrost|cooling forces the current state
   const force = (v) => {
     if (!PH) return v;
     const run = PH !== "passive_defrost";
-    Object.assign(v, { compressor_phase: PH, compressor: run ? "on" : "off", fan_speed: PH === "defrost" ? 0 : run ? 45 : 30 });
+    Object.assign(v, { compressor_phase: PH, compressor: run ? "on" : "off", fan_speed: PH === "defrost" ? 0 : run ? 45 : 30, compressor_modulation: run ? (PH === "defrost" ? 90 : 72) : 0, eev_position: run ? (PH === "defrost" ? 100 : 34) : 0 });
     if (PH === "defrost") Object.assign(v, { secondary_circuit_supply_temperature: 21, secondary_circuit_return_temperature: 25.1, hot_gas_temperature: 52, suction_gas_temperature: 12 });
     if (PH === "cooling") Object.assign(v, { secondary_circuit_supply_temperature: 16, secondary_circuit_return_temperature: 20, hot_gas_temperature: 55 });
     return v;

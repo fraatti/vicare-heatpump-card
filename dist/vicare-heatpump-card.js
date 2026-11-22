@@ -4,7 +4,7 @@
  * indicative health check for Viessmann heat pumps using the built-in ViCare
  * integration. MIT License.
  */
-const VHP_VERSION = "0.15.0";
+const VHP_VERSION = "0.16.0";
 
 /* Refrigerant tables generated with CoolProp (IIR reference state).
  * sat: [T °C, p_bubble bar(a), p_dew bar(a), h_liquid kJ/kg, h_vapour kJ/kg]
@@ -174,7 +174,7 @@ const VHP_I18N = {
       log_markers: "Lokin merkit aikajanalla",
       cold_water: "Kylmän veden lämpötila",
       entities: "Anturit (tyhjä = automaattinen)",
-      r_hot_gas_t: "Kuumakaasun lämpötila", r_hot_gas_p: "Kuumakaasun paine", r_suction_t: "Imukaasun lämpötila", r_suction_p: "Imukaasun paine", r_liquid_t: "Nestelinjan lämpötila", r_subcooling: "Alijäähdytys", r_superheat: "Tulistus", r_compressor: "Kompressori (päällä/pois)", r_phase: "Kompressorin vaihe", r_starts: "Käynnistykset", r_sec_supply: "Menovesi (lämpöpumppu)", r_sec_return: "Paluuvesi (lämpöpumppu)", r_circ_pump: "Kiertovesipumppu", r_circ_pump_speed: "Kiertovesipumpun nopeus %", r_dhw_charging: "Käyttövesilataus (vaihtoventtiili)", r_dhw_top: "Käyttövesivaraajan lämpötila", r_dhw_circ: "Käyttöveden kiertopumppu", r_buffer_t: "Puskurivaraajan lämpötila", r_circ_supply: "Lämmityspiirin menovesi", r_mixer: "Shuntin avaus %", r_heater: "Sähkövastus (päällä tai teho)", r_pri_supply: "Liuos kaivolta / ilma sisään", r_pri_return: "Liuos kaivoon", r_pri_pump: "Liuospumpun nopeus %", r_fan: "Puhaltimen nopeus %", r_outside: "Ulkolämpötila", r_cop_heating: "COP lämmitys", r_cop_dhw: "COP käyttövesi", r_cop_total: "COP yhteensä",
+      r_hot_gas_t: "Kuumakaasun lämpötila", r_hot_gas_p: "Kuumakaasun paine", r_suction_t: "Imukaasun lämpötila", r_suction_p: "Imukaasun paine", r_liquid_t: "Nestelinjan lämpötila", r_subcooling: "Alijäähdytys", r_superheat: "Tulistus", r_compressor: "Kompressori (päällä/pois)", r_comp_speed: "Kompressorin nopeus (% tai rps)", r_eev: "Paisuntaventtiilin avaus %", r_phase: "Kompressorin vaihe", r_starts: "Käynnistykset", r_sec_supply: "Menovesi (lämpöpumppu)", r_sec_return: "Paluuvesi (lämpöpumppu)", r_circ_pump: "Kiertovesipumppu", r_circ_pump_speed: "Kiertovesipumpun nopeus %", r_dhw_charging: "Käyttövesilataus (vaihtoventtiili)", r_dhw_top: "Käyttövesivaraajan lämpötila", r_dhw_circ: "Käyttöveden kiertopumppu", r_buffer_t: "Puskurivaraajan lämpötila", r_circ_supply: "Lämmityspiirin menovesi", r_mixer: "Shuntin avaus %", r_heater: "Sähkövastus (päällä tai teho)", r_pri_supply: "Liuos kaivolta / ilma sisään", r_pri_return: "Liuos kaivoon", r_pri_pump: "Liuospumpun nopeus %", r_fan: "Puhaltimen nopeus %", r_outside: "Ulkolämpötila", r_cop_heating: "COP lämmitys", r_cop_dhw: "COP käyttövesi", r_cop_total: "COP yhteensä",
     },
   },
   en: {
@@ -337,7 +337,7 @@ const VHP_I18N = {
       log_markers: "Logbook markers on the timeline",
       cold_water: "Cold water temperature",
       entities: "Sensors (empty = automatic)",
-      r_hot_gas_t: "Hot gas temperature", r_hot_gas_p: "Hot gas pressure", r_suction_t: "Suction gas temperature", r_suction_p: "Suction gas pressure", r_liquid_t: "Liquid line temperature", r_subcooling: "Subcooling", r_superheat: "Superheat", r_compressor: "Compressor (on/off)", r_phase: "Compressor phase", r_starts: "Compressor starts", r_sec_supply: "Supply water (heat pump)", r_sec_return: "Return water (heat pump)", r_circ_pump: "Circulation pump", r_circ_pump_speed: "Circulation pump speed %", r_dhw_charging: "Hot water charging (diverter valve)", r_dhw_top: "Hot water cylinder temperature", r_dhw_circ: "DHW circulation pump", r_buffer_t: "Buffer cylinder temperature", r_circ_supply: "Heating circuit supply", r_mixer: "Mixing valve opening %", r_heater: "Electric heater (on or power)", r_pri_supply: "Brine from ground / air in", r_pri_return: "Brine to ground", r_pri_pump: "Brine pump speed %", r_fan: "Fan speed %", r_outside: "Outdoor temperature", r_cop_heating: "COP heating", r_cop_dhw: "COP hot water", r_cop_total: "COP total",
+      r_hot_gas_t: "Hot gas temperature", r_hot_gas_p: "Hot gas pressure", r_suction_t: "Suction gas temperature", r_suction_p: "Suction gas pressure", r_liquid_t: "Liquid line temperature", r_subcooling: "Subcooling", r_superheat: "Superheat", r_compressor: "Compressor (on/off)", r_comp_speed: "Compressor speed (% or rps)", r_eev: "Expansion valve opening %", r_phase: "Compressor phase", r_starts: "Compressor starts", r_sec_supply: "Supply water (heat pump)", r_sec_return: "Return water (heat pump)", r_circ_pump: "Circulation pump", r_circ_pump_speed: "Circulation pump speed %", r_dhw_charging: "Hot water charging (diverter valve)", r_dhw_top: "Hot water cylinder temperature", r_dhw_circ: "DHW circulation pump", r_buffer_t: "Buffer cylinder temperature", r_circ_supply: "Heating circuit supply", r_mixer: "Mixing valve opening %", r_heater: "Electric heater (on or power)", r_pri_supply: "Brine from ground / air in", r_pri_return: "Brine to ground", r_pri_pump: "Brine pump speed %", r_fan: "Fan speed %", r_outside: "Outdoor temperature", r_cop_heating: "COP heating", r_cop_dhw: "COP hot water", r_cop_total: "COP total",
     },
   },
 };
@@ -358,6 +358,7 @@ const VHP_ROLES = {
   pri_pump: { d: "sensor", k: ["primary_circuit_pump_rotation"] },
   outside: { d: "sensor", k: ["outside_temperature"] },
   compressor: { d: "binary_sensor", k: ["compressor"] },
+  comp_speed: { d: "sensor", k: ["compressor_modulation"] }, // inverter units; your own sensor may give rps instead
   circ_pump: { d: "binary_sensor", k: ["circulation_pump"] },
   dhw_circ: { d: "binary_sensor", k: ["domestic_hot_water_circulation_pump"] },
   phase: { d: "sensor", k: ["compressor_phase"] },
@@ -374,9 +375,10 @@ const VHP_ROLES = {
   mixer: { d: "sensor", k: [] },
   heater: { d: "sensor", k: [] },
   fan: { d: "sensor", k: [] },
+  eev: { d: "sensor", k: [] },
 };
 /* Roles offered in the editor, in this order */
-const VHP_EDIT_ROLES = ["hot_gas_t", "hot_gas_p", "suction_t", "suction_p", "liquid_t", "subcooling", "superheat", "compressor", "phase", "starts",
+const VHP_EDIT_ROLES = ["hot_gas_t", "hot_gas_p", "suction_t", "suction_p", "liquid_t", "subcooling", "superheat", "eev", "compressor", "comp_speed", "phase", "starts",
   "sec_supply", "sec_return", "circ_pump", "circ_pump_speed", "dhw_charging", "dhw_top", "dhw_circ", "buffer_t", "circ_supply", "mixer", "heater",
   "pri_supply", "pri_return", "pri_pump", "fan", "outside", "cop_heating", "cop_dhw", "cop_total"];
 /* Roles worth reporting as missing (the circuit view depends on them). */
@@ -1534,10 +1536,12 @@ class VicareHeatpumpCard extends HTMLElement {
         <circle cx="340" cy="100" r="20" class="shade" fill="url(#sphg)"/>
       </g>
       ${air ? `<text x="314" y="172" text-anchor="end" class="cap compcap">${i.compressor}</text>` : `<text x="340" y="136" text-anchor="middle" class="cap compcap">${i.compressor}</text>`}
+      <text x="${air ? 314 : 340}" y="${air ? 172 : 136}" dy="1.25em" text-anchor="${air ? "end" : "middle"}" class="num spd" id="v_comp"></text>
       <!-- expansion valve -->
       <polygon points="326,210 340,220 326,230" class="ev"/>
       <polygon points="354,210 340,220 354,230" class="ev"/>
       <text x="330" y="252" class="cap evcap">${i.exp_valve}</text>
+      <text x="360" y="211" class="num spd" id="v_eev"></text>
       <!-- water side -->
       <line class="wl hot wflow" id="w_sup" x1="172" y1="100" x2="78" y2="100"/>
       <g id="tw" class="tw3" data-role="dhw_charging">
@@ -1546,11 +1550,12 @@ class VicareHeatpumpCard extends HTMLElement {
       <g id="heater" class="heater" data-role="heater" style="display:none">
         <rect x="138" y="91" width="24" height="18" rx="4" class="hb"/>
         <path d="M141 100 q2.25 -6 4.5 0 q2.25 6 4.5 0 q2.25 -6 4.5 0 q2.25 6 4.5 0" class="hc"/>
-        <text x="164" y="124" text-anchor="end" class="cap" id="v_heater">${i.heater}</text>
+        <text x="164" y="138" text-anchor="end" class="cap" id="v_heater">${i.heater}</text>
       </g>
       <g id="cpump" class="pumpsym" data-role="circ_pump" style="display:none">
         <circle cx="98" cy="100" r="8.5" class="pc"/>
         <g class="ptg" style="transform-origin:98px 100px"><path d="M89.5 100 L102.25 92.64 L102.25 107.36 Z" class="pt"/></g>
+        <text x="98" y="122" text-anchor="middle" class="cap" id="v_cpump"></text>
       </g>
       <!-- heating branch: 3-way valve -> (buffer ->) heating circuit -> return -->
       <path class="wl brh wflow" id="w_heat" d="${HL.w_heat}"/>
@@ -1738,9 +1743,25 @@ class VicareHeatpumpCard extends HTMLElement {
     $("heater").classList.toggle("on", !!heatOn);
     if (this._heaterShow) {
       const u = this._hass.states[this._roles.heater]?.attributes?.unit_of_measurement;
-      this._set("v_heater", isFinite(hv) && u ? `${i.heater} ${this._fmt(hv, u === "W" ? 0 : 1)} ${u}` : i.heater);
+      this._set("v_heater", isFinite(hv) && hv > 0 && u ? `${i.heater} ${this._fmt(hv, u === "W" ? 0 : 1)} ${u}` : i.heater);
     }
     this._set("v_pri_pump", isFinite(pump) ? `${this._fmt(pump, 0)} %` : "");
+    // Speeds: compressor (% or rps), expansion valve opening, the heating circuit pump next to the
+    // diverter valve when there is no buffer or mixing valve. They also set the animation speeds.
+    const cs = this._val("comp_speed"), csU = this._hass.states[this._roles.comp_speed]?.attributes?.unit_of_measurement || "%";
+    this._set("v_comp", compOn && isFinite(cs) ? `${this._fmt(cs, 0)} ${csU === "%" ? "%" : csU}` : "");
+    const ev = this._val("eev");
+    this._set("v_eev", compOn && isFinite(ev) ? `${this._fmt(ev, 0)} %` : "");
+    const ownPump = !buf && !this._config.mixer;
+    this._set("v_cpump", ownPump && isFinite(spd) && this._on("circ_pump") ? pct(spd) : "");
+    // animation time factor: 1 = the default speed (about 70 %), slower below, faster above
+    const fac = (v, ref = 70) => (isFinite(v) && v > 0 ? Math.max(0.6, Math.min(4, ref / Math.max(v, 10))) : 1);
+    const csPct = csU === "%" ? cs : isFinite(cs) ? (cs / 120) * 100 : NaN; // rps: roughly 120 rps = 100 %
+    const dsvg = $("diagram").firstElementChild;
+    dsvg.style.setProperty("--rk", fac(csPct).toFixed(2));
+    dsvg.style.setProperty("--bk", fac(pump).toFixed(2));
+    dsvg.style.setProperty("--wk", (ownPump ? fac(spd) : 1).toFixed(2));
+    dsvg.style.setProperty("--ck", (ownPump ? 1 : fac(spd)).toFixed(2));
     $("diagram").firstElementChild.classList.toggle("brineon", brineOn);
     $("diagram").firstElementChild.classList.toggle("wateron", compOn || (!buf && this._on("circ_pump")));
     $("diagram").firstElementChild.classList.toggle("circon", buf && cpOn);
@@ -2305,6 +2326,7 @@ ha-card { padding: 14px 16px 12px; overflow: hidden; container-type: inline-size
 .btn.on { border-color: var(--primary-color); color: var(--primary-color); }
 .btn.icon { padding: 3px 6px; }
 .diagram svg { width: 100%; height: auto; display: block; margin-top: 4px; }
+.num.spd { font-size: calc(11.5px * var(--k, 1)); font-weight: 500; fill: var(--secondary-text-color); }
 .diagram.narrow .compcap, .diagram.narrow .hxcap, .diagram.tight .evcap, .diagram.narrow #t_fv, .diagram.narrow .airin, .diagram.narrow .oducap, .diagram.narrow svg.air #v_lift { display: none; }
 .diagram.narrow .val[data-role="sec_supply"] { transform: translate(4px, -12px); }
 .diagram.narrow .val[data-role="sec_supply"] .cap { display: none; }
@@ -2427,18 +2449,22 @@ svg.melting .melt { display: inline; fill: #64b5f6; transform-box: fill-box; }
 .pumpsym.on .pt { opacity: 1; }
 .pumpsym.brinep .pc { stroke: var(--bin-c, var(--vhp-brine)); } .pumpsym.brinep .pt { fill: var(--bin-c, var(--vhp-brine)); }
 @media (prefers-reduced-motion: no-preference) {
-  svg.running .fx.fxr { animation: vhpdots .45s linear infinite; }
-  svg.wateron .fx.fxw { animation: vhpdots .8s linear infinite; }
-  svg.brineon .fx.fxb { animation: vhpdots .9s linear infinite; }
-  svg.circon .fx.fxc { animation: vhpdots .9s linear infinite; }
-  .running .stream { animation: vhpstream .7s linear infinite; }
-  svg.wateron .hxwater, svg.brineon .hxbrine { animation: vhphxf .9s linear infinite; }
-  svg.running .hxflow.hxref { animation: vhphxr .45s linear infinite; }
+  svg.running .fx.fxr { animation: vhpdots calc(.45s * var(--rk, 1)) linear infinite; }
+  svg.wateron .fx.fxw { animation: vhpdots calc(.8s * var(--wk, 1)) linear infinite; }
+  svg.brineon .fx.fxb { animation: vhpdots calc(.9s * var(--bk, 1)) linear infinite; }
+  svg.circon .fx.fxc { animation: vhpdots calc(.9s * var(--ck, 1)) linear infinite; }
+  .running .stream { animation: vhpstream calc(.7s * var(--rk, 1)) linear infinite; }
+  svg.wateron .hxwater { animation: vhphxf calc(.9s * var(--wk, 1)) linear infinite; }
+  svg.brineon .hxbrine { animation: vhphxf calc(.9s * var(--bk, 1)) linear infinite; }
+  svg.running .hxflow.hxref { animation: vhphxr calc(.45s * var(--rk, 1)) linear infinite; }
   svg.running .drop { animation-name: vhpdrop; animation-timing-function: cubic-bezier(.5, 0, 1, 1); animation-iteration-count: infinite; }
   svg.running .bub { animation-name: vhpbub; animation-timing-function: cubic-bezier(.3, 0, .7, 1); animation-iteration-count: infinite; }
   svg.running .gdot { animation-name: vhpgasd; animation-timing-function: linear; animation-iteration-count: infinite; }
   svg.running .gdot.up { animation-name: vhpgasu; }
   .pumpsym.on .ptg { animation: vhpspin 1.6s linear infinite; }
+  #pump.on .ptg { animation-duration: calc(1.6s * var(--bk, 1)); }
+  #cpump.on .ptg { animation-duration: calc(1.6s * var(--wk, 1)); }
+  #hpump.on .ptg { animation-duration: calc(1.6s * var(--ck, 1)); }
   svg.fanon .fanr { animation: vhpspin var(--fan-s, .9s) linear infinite; }
   svg.melting .melt { animation: vhpmelt 1.6s ease-in infinite; }
 }
