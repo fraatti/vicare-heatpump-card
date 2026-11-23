@@ -2,9 +2,13 @@
 
 All notable changes to the ViCare Heat Pump Card. Versions follow [semantic versioning](https://semver.org/).
 
-## Unreleased
+## 1.8.0 – 2026-11-23
 
 ### Added
+- Sensors from other sources than ViCare (Optolink, open3e, ESPHome, Modbus): the on/off roles (`compressor`, `circ_pump`, `circ_pump_2`, `dhw_circ`, `dhw_charging`) accept `1`/`0`, `true`/`false`, `open`/`closed` and numbers (non-zero is on), in the diagram, the history and the timeline. `dhw_charging` may also be the diverter valve's position (`Warmwasser`, `WW`, `DHW`, `domesticHotWater`, `hot water`; anything else is heating), so hot water runs are recognised.
+- Pressures in kPa, hPa, mbar, MPa, Pa or psi are converted to bar from the sensor's unit, trends included.
+- A pressure above the refrigerant's critical pressure is reported as a wrong unit or scale (e.g. Optolink's 0.1 bar steps) instead of a faulty sensor, and it is not used for tc, t0, superheat or subcooling.
+- Demo parameters `fault=scale`, `dhw=1` and `onoff=num|text`.
 - Demo: a snapshot of a Vitocal 300-G (CU401B) from PyViCare's test data, with buffer cylinder and brine pump speed. The demo snapshots now include the brine pump speed (`primary_circuit_pump_rotation`) where the unit reports it.
 - README: link to the live demo on GitHub Pages.
 

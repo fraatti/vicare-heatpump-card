@@ -243,3 +243,38 @@ describe("pressure sensor plausibility", { concurrency: 4 }, () => {
     });
   }
 });
+
+// Other sources than ViCare (Optolink, open3e, ESPHome): on/off as 1/0 or text, pressure in 0.1 bar steps.
+// ?dhw=1 ends each run with hot water (from 35 min), ?onoff=num|text reports the on/off states as 1/0 or "Warmwasser"/"Heizen".
+const OTHER = [
+  { qs: "cycle=40&dhw=1", mode: "dhw" },
+  { qs: "cycle=40&dhw=1&onoff=num", mode: "dhw" },
+  { qs: "cycle=40&dhw=1&onoff=text", mode: "dhw" },
+  { qs: "cycle=20&dhw=1&onoff=text", mode: "heating" },
+  { qs: "cycle=89&onoff=num", mode: "pause" },
+  { qs: "cycle=30&fault=scale", mode: "heating", scale: true },
+  { qs: "cycle=89&fault=scale&lang=fi", mode: "pause", scale: true },
+];
+describe("states from other sources", { concurrency: 4 }, () => {
+  for (const c of OTHER) {
+    test(`?${c.qs}`, async () => {
+      const { page, errors } = await open(c.qs);
+      try {
+        const r = await page.evaluate(() => {
+          const card = document.querySelector("vicare-heatpump-card"), root = card.shadowRoot;
+          const h = card._hist?.[card._roles.dhw_charging]?.v || [];
+          return { mode: card._mode(), hist: [...new Set(h)], t0: root.getElementById("v_t0")?.textContent || "", sf: root.getElementById("sfault").textContent };
+        });
+        assert.equal(r.mode, c.mode, "operating mode");
+        if (c.qs.includes("dhw=1")) assert.deepEqual([...r.hist].sort(), ["off", "on"], "the hot water history is normalised to on/off");
+        if (c.scale) {
+          assert.match(r.sf, /critical pressure|kriittisen paineen/, "the scale message is shown");
+          assert.ok(!r.t0.includes("°C"), `t0 is not calculated from a wrongly scaled pressure (${r.t0})`);
+        } else assert.equal(r.sf, "", "no sensor message");
+        assert.deepEqual(errors, [], "no page errors or console errors");
+      } finally {
+        await page.close();
+      }
+    });
+  }
+});

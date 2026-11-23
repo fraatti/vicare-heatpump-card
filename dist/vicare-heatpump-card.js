@@ -4,7 +4,7 @@
  * indicative health check for Viessmann heat pumps using the built-in ViCare
  * integration. MIT License.
  */
-const VHP_VERSION = "1.7.0";
+const VHP_VERSION = "1.8.0";
 
 /* Refrigerant tables generated with CoolProp (IIR reference state).
  * sat: [T °C, p_bubble bar(a), p_dew bar(a), h_liquid kJ/kg, h_vapour kJ/kg]
@@ -105,7 +105,7 @@ const VHP_I18N = {
     no_ph: "Korkea- tai matalapaine puuttuu, joten piirrosta ei voi muodostaa.",
     disclaimer_air: "Ohjeelliset rajat ilma-vesilämpöpumpulle. ViCare päivittää arvot eri hetkinä, joten yksittäinen lukema voi olla muutaman minuutin vanha. Arvio ei korvaa huoltoa.",
     est_high: "Korkeapainetta ei mitata. Lauhtumislämpötila (≈) on arvioitu nestelinjan ja menoveden lämpötilasta, joten siitä riippuvat kohdat jätetään arviosta pois.",
-    sf: { hp: "Korkeapaineanturin lukema on epäuskottava: {why}. Tarkista anturi ja sen liitin.", lp: "Matalapaineanturin lukema on epäuskottava: {why}. Tarkista anturi ja sen liitin.", hp_skip: "Lauhtumislämpötila ja alijäähdytys lasketaan tästä paineesta, joten niistä riippuvat kohdat jätetään arviosta pois.", lp_skip: "Höyrystymislämpötila ja tulistus lasketaan tästä paineesta, joten niistä riippuvat kohdat jätetään arviosta pois.", hp_below_supply: "lauhtumislämpötila {a} on alle lämmityksen menoveden {b}", hp_below_liquid: "lauhtumislämpötila {a} on alle nestelinjan {b}", hp_above_hot: "lauhtumislämpötila {a} on yli kuumakaasun {b}", lp_above_brine: "höyrystymislämpötila {a} on yli tulevan liuoksen {b}", lp_above_air: "höyrystymislämpötila {a} on yli ulkoilman {b}", lp_above_suction: "höyrystymislämpötila {a} on yli imukaasun {b}" },
+    sf: { scale_hp: "Korkeapaineen (kuumakaasun paine) lukema {a} on yli kylmäaineen kriittisen paineen {b}. Yksikkö tai mittakaava on todennäköisesti väärä (esim. 0,1 bar tai kPa), joten painetta ei käytetä. Tarkista sensorin asetus.", scale_lp: "Matalapaineen (imukaasun paine) lukema {a} on yli kylmäaineen kriittisen paineen {b}. Yksikkö tai mittakaava on todennäköisesti väärä (esim. 0,1 bar tai kPa), joten painetta ei käytetä. Tarkista sensorin asetus.", hp: "Korkeapaineanturin lukema on epäuskottava: {why}. Tarkista anturi ja sen liitin.", lp: "Matalapaineanturin lukema on epäuskottava: {why}. Tarkista anturi ja sen liitin.", hp_skip: "Lauhtumislämpötila ja alijäähdytys lasketaan tästä paineesta, joten niistä riippuvat kohdat jätetään arviosta pois.", lp_skip: "Höyrystymislämpötila ja tulistus lasketaan tästä paineesta, joten niistä riippuvat kohdat jätetään arviosta pois.", hp_below_supply: "lauhtumislämpötila {a} on alle lämmityksen menoveden {b}", hp_below_liquid: "lauhtumislämpötila {a} on alle nestelinjan {b}", hp_above_hot: "lauhtumislämpötila {a} on yli kuumakaasun {b}", lp_above_brine: "höyrystymislämpötila {a} on yli tulevan liuoksen {b}", lp_above_air: "höyrystymislämpötila {a} on yli ulkoilman {b}", lp_above_suction: "höyrystymislämpötila {a} on yli imukaasun {b}" },
     reversed_note: "Kierto on käännetty ({mode}): ulkoyksikön patteri lauhduttaa ja sisäyksikön lämmönsiirrin höyrystää. Arvio tehdään vain lämmitykselle ja käyttövedelle.",
     after_defrost: "Sulatus päättyi {m} min sitten. Arvio tehdään, kun käynti on taas vakiintunut ({s} min).",
     ph_source: "Lähde",
@@ -293,7 +293,7 @@ const VHP_I18N = {
     no_ph: "High or low pressure is missing, so the diagram cannot be drawn.",
     disclaimer_air: "Indicative limits for an air source heat pump. ViCare updates values at different moments, so a single reading may be a few minutes old. This is not a substitute for service.",
     est_high: "The high pressure is not measured. The condensing temperature (≈) is estimated from the liquid line and the supply water, so the checks that depend on it are left out.",
-    sf: { hp: "The high pressure sensor reading is implausible: {why}. Check the sensor and its connector.", lp: "The low pressure sensor reading is implausible: {why}. Check the sensor and its connector.", hp_skip: "The condensing temperature and the subcooling are calculated from this pressure, so the checks that depend on them are left out.", lp_skip: "The evaporating temperature and the superheat are calculated from this pressure, so the checks that depend on them are left out.", hp_below_supply: "the condensing temperature {a} is below the heating supply water {b}", hp_below_liquid: "the condensing temperature {a} is below the liquid line {b}", hp_above_hot: "the condensing temperature {a} is above the hot gas {b}", lp_above_brine: "the evaporating temperature {a} is above the incoming brine {b}", lp_above_air: "the evaporating temperature {a} is above the outdoor air {b}", lp_above_suction: "the evaporating temperature {a} is above the suction gas {b}" },
+    sf: { scale_hp: "The high pressure (hot gas pressure) reading {a} is above the refrigerant's critical pressure {b}. The unit or scale is probably wrong (e.g. 0.1 bar or kPa), so the pressure is not used. Check the sensor's settings.", scale_lp: "The low pressure (suction gas pressure) reading {a} is above the refrigerant's critical pressure {b}. The unit or scale is probably wrong (e.g. 0.1 bar or kPa), so the pressure is not used. Check the sensor's settings.", hp: "The high pressure sensor reading is implausible: {why}. Check the sensor and its connector.", lp: "The low pressure sensor reading is implausible: {why}. Check the sensor and its connector.", hp_skip: "The condensing temperature and the subcooling are calculated from this pressure, so the checks that depend on them are left out.", lp_skip: "The evaporating temperature and the superheat are calculated from this pressure, so the checks that depend on them are left out.", hp_below_supply: "the condensing temperature {a} is below the heating supply water {b}", hp_below_liquid: "the condensing temperature {a} is below the liquid line {b}", hp_above_hot: "the condensing temperature {a} is above the hot gas {b}", lp_above_brine: "the evaporating temperature {a} is above the incoming brine {b}", lp_above_air: "the evaporating temperature {a} is above the outdoor air {b}", lp_above_suction: "the evaporating temperature {a} is above the suction gas {b}" },
     reversed_note: "The cycle is reversed ({mode}): the outdoor coil condenses and the indoor heat exchanger evaporates. The assessment is made for heating and hot water only.",
     after_defrost: "Defrost ended {m} min ago. The assessment is made once operation has settled again ({s} min).",
     ph_source: "Source",
@@ -484,7 +484,7 @@ const VHP_I18N_SV = {
     no_ph: "Hög- eller lågtryck saknas, så diagrammet kan inte ritas.",
     disclaimer_air: "Riktvärden för en luft/vatten-värmepump. ViCare uppdaterar värdena vid olika tidpunkter, så ett enskilt värde kan vara några minuter gammalt. Ersätter inte service.",
     est_high: "Högtrycket mäts inte. Kondenseringstemperaturen (≈) är uppskattad från vätskeledningen och framledningsvattnet, så kontrollerna som beror på den utelämnas.",
-    sf: { hp: "Högtrycksgivarens värde är orimligt: {why}. Kontrollera givaren och dess kontakt.", lp: "Lågtrycksgivarens värde är orimligt: {why}. Kontrollera givaren och dess kontakt.", hp_skip: "Kondenseringstemperaturen och underkylningen beräknas från detta tryck, så kontrollerna som beror på dem utelämnas.", lp_skip: "Förångningstemperaturen och överhettningen beräknas från detta tryck, så kontrollerna som beror på dem utelämnas.", hp_below_supply: "kondenseringstemperaturen {a} är lägre än värmens framledning {b}", hp_below_liquid: "kondenseringstemperaturen {a} är lägre än vätskeledningen {b}", hp_above_hot: "kondenseringstemperaturen {a} är högre än hetgasen {b}", lp_above_brine: "förångningstemperaturen {a} är högre än inkommande köldbärare {b}", lp_above_air: "förångningstemperaturen {a} är högre än uteluften {b}", lp_above_suction: "förångningstemperaturen {a} är högre än suggasen {b}" },
+    sf: { scale_hp: "Högtrycksvärdet (hetgastryck) {a} är högre än köldmediets kritiska tryck {b}. Enheten eller skalan är troligen fel (t.ex. 0,1 bar eller kPa), så trycket används inte. Kontrollera givarens inställning.", scale_lp: "Lågtrycksvärdet (suggastryck) {a} är högre än köldmediets kritiska tryck {b}. Enheten eller skalan är troligen fel (t.ex. 0,1 bar eller kPa), så trycket används inte. Kontrollera givarens inställning.", hp: "Högtrycksgivarens värde är orimligt: {why}. Kontrollera givaren och dess kontakt.", lp: "Lågtrycksgivarens värde är orimligt: {why}. Kontrollera givaren och dess kontakt.", hp_skip: "Kondenseringstemperaturen och underkylningen beräknas från detta tryck, så kontrollerna som beror på dem utelämnas.", lp_skip: "Förångningstemperaturen och överhettningen beräknas från detta tryck, så kontrollerna som beror på dem utelämnas.", hp_below_supply: "kondenseringstemperaturen {a} är lägre än värmens framledning {b}", hp_below_liquid: "kondenseringstemperaturen {a} är lägre än vätskeledningen {b}", hp_above_hot: "kondenseringstemperaturen {a} är högre än hetgasen {b}", lp_above_brine: "förångningstemperaturen {a} är högre än inkommande köldbärare {b}", lp_above_air: "förångningstemperaturen {a} är högre än uteluften {b}", lp_above_suction: "förångningstemperaturen {a} är högre än suggasen {b}" },
     reversed_note: "Cykeln är omkastad ({mode}): utedelens lamellbatteri kondenserar och värmeväxlaren inomhus förångar. Bedömningen görs endast för värme och varmvatten.",
     after_defrost: "Avfrostningen slutade för {m} min sedan. Bedömningen görs när driften har stabiliserats igen ({s} min).",
     ph_source: "Källa",
@@ -672,7 +672,7 @@ const VHP_I18N_DE = {
     no_ph: "Hoch- oder Niederdruck fehlt, daher kann das Diagramm nicht gezeichnet werden.",
     disclaimer_air: "Richtwerte für eine Luft/Wasser-Wärmepumpe. ViCare aktualisiert die Werte zu unterschiedlichen Zeitpunkten, ein einzelner Wert kann daher einige Minuten alt sein. Kein Ersatz für eine Wartung.",
     est_high: "Der Hochdruck wird nicht gemessen. Die Kondensationstemperatur (≈) ist aus Flüssiggas- und Vorlauftemperatur geschätzt, daher entfallen die davon abhängigen Prüfungen.",
-    sf: { hp: "Der Wert des Hochdrucksensors ist unplausibel: {why}. Sensor und Steckverbindung prüfen.", lp: "Der Wert des Niederdrucksensors ist unplausibel: {why}. Sensor und Steckverbindung prüfen.", hp_skip: "Kondensationstemperatur und Unterkühlung werden aus diesem Druck berechnet, daher entfallen die davon abhängigen Prüfungen.", lp_skip: "Verdampfungstemperatur und Überhitzung werden aus diesem Druck berechnet, daher entfallen die davon abhängigen Prüfungen.", hp_below_supply: "Kondensationstemperatur {a} liegt unter dem Heizungsvorlauf {b}", hp_below_liquid: "Kondensationstemperatur {a} liegt unter der Flüssigkeitsleitung {b}", hp_above_hot: "Kondensationstemperatur {a} liegt über dem Heißgas {b}", lp_above_brine: "Verdampfungstemperatur {a} liegt über dem Soleeintritt {b}", lp_above_air: "Verdampfungstemperatur {a} liegt über der Außenluft {b}", lp_above_suction: "Verdampfungstemperatur {a} liegt über dem Sauggas {b}" },
+    sf: { scale_hp: "Der Hochdruckwert (Heißgasdruck) {a} liegt über dem kritischen Druck des Kältemittels {b}. Einheit oder Skalierung ist vermutlich falsch (z. B. 0,1 bar oder kPa), daher wird der Druck nicht verwendet. Sensoreinstellung prüfen.", scale_lp: "Der Niederdruckwert (Sauggasdruck) {a} liegt über dem kritischen Druck des Kältemittels {b}. Einheit oder Skalierung ist vermutlich falsch (z. B. 0,1 bar oder kPa), daher wird der Druck nicht verwendet. Sensoreinstellung prüfen.", hp: "Der Wert des Hochdrucksensors ist unplausibel: {why}. Sensor und Steckverbindung prüfen.", lp: "Der Wert des Niederdrucksensors ist unplausibel: {why}. Sensor und Steckverbindung prüfen.", hp_skip: "Kondensationstemperatur und Unterkühlung werden aus diesem Druck berechnet, daher entfallen die davon abhängigen Prüfungen.", lp_skip: "Verdampfungstemperatur und Überhitzung werden aus diesem Druck berechnet, daher entfallen die davon abhängigen Prüfungen.", hp_below_supply: "Kondensationstemperatur {a} liegt unter dem Heizungsvorlauf {b}", hp_below_liquid: "Kondensationstemperatur {a} liegt unter der Flüssigkeitsleitung {b}", hp_above_hot: "Kondensationstemperatur {a} liegt über dem Heißgas {b}", lp_above_brine: "Verdampfungstemperatur {a} liegt über dem Soleeintritt {b}", lp_above_air: "Verdampfungstemperatur {a} liegt über der Außenluft {b}", lp_above_suction: "Verdampfungstemperatur {a} liegt über dem Sauggas {b}" },
     reversed_note: "Der Kreisprozess ist umgekehrt ({mode}): Der Lamellenwärmetauscher der Außeneinheit verflüssigt, der Wärmetauscher innen verdampft. Bewertet werden nur Heizen und Warmwasser.",
     after_defrost: "Abtauung vor {m} min beendet. Die Bewertung erfolgt, sobald der Betrieb wieder eingeschwungen ist ({s} min).",
     ph_source: "Quelle",
@@ -999,6 +999,21 @@ function vhpBridge(t, v) {
   }
   return { t: T, v: V };
 }
+/* On/off states from other sources than ViCare (Optolink, open3e, ESPHome, Modbus): 1/0, true/false, open/closed,
+   numbers (non-zero is on) and, for the hot water diverter valve, a position such as "Warmwasser" or "domesticHotWater". */
+const VHP_ON = ["on", "true", "yes", "open", "opened", "active", "an", "ein", "auf"];
+const VHP_OFF = ["off", "false", "no", "closed", "inactive", "aus", "zu"];
+const VHP_DHW_POS = /^(dhw|ww|warm ?wasser|warmwasserbereitung|domestic[ _]?hot[ _]?water|hot[ _]?water|käyttövesi|lkv|varmvatten)$/;
+function vhpOnOff(s, dhw = false) {
+  if (s === undefined || s === null || vhpNa(s)) return s;
+  const k = String(s).trim().toLowerCase();
+  if (VHP_ON.includes(k) || (dhw && VHP_DHW_POS.test(k))) return "on";
+  if (VHP_OFF.includes(k)) return "off";
+  if (/^-?\d+(\.\d+)?$/.test(k)) return parseFloat(k) !== 0 ? "on" : "off";
+  return dhw ? "off" : s;
+}
+/* Pressure units Home Assistant may report, to bar */
+const VHP_P_UNIT = { bar: 1, mbar: 0.001, kpa: 0.01, hpa: 0.001, mpa: 10, pa: 0.00001, psi: 0.0689476 };
 function vhpNum(v) {
   if (v === undefined || v === null) return NaN;
   if (typeof v === "number") return v;
@@ -1371,6 +1386,16 @@ class VicareHeatpumpCard extends HTMLElement {
     for (const [role, eid] of Object.entries(this._config.entities || {})) if (eid) roles[role] = eid;
     if (roles.circ_supply && roles.circ_supply === roles.sec_supply) delete roles.circ_supply;
     this._roles = roles;
+    // on/off roles may come from other sources than ViCare: their states are normalised to "on"/"off"
+    this._binMode = new Map();
+    for (const r of ["compressor", "circ_pump", "circ_pump_2", "dhw_circ"]) if (roles[r]) this._binMode.set(roles[r], "bin");
+    if (roles.dhw_charging) this._binMode.set(roles.dhw_charging, "dhw");
+    // pressures in another unit than bar (kPa, MPa, psi …) are converted everywhere, trends included
+    this._pFac = new Map();
+    for (const r of ["hot_gas_p", "suction_p"]) {
+      const u = String(hass.states[roles[r]]?.attributes?.unit_of_measurement || "bar").toLowerCase();
+      if (roles[r] && VHP_P_UNIT[u] && VHP_P_UNIT[u] !== 1) this._pFac.set(roles[r], VHP_P_UNIT[u]);
+    }
     this._checkDisabled();
     const yes = (v) => v === true || v === "yes" || v === "true" || v === "on";
     const no = (v) => v === false || v === "no" || v === "false" || v === "off";
@@ -1462,15 +1487,30 @@ class VicareHeatpumpCard extends HTMLElement {
   _raw(role, t = this._t) {
     const eid = this._roles?.[role];
     if (!eid) return undefined;
-    if (t === null) return this._hass.states[eid]?.state;
+    if (t === null) return this._norm(eid, this._hass.states[eid]?.state);
     return this._histAt(eid, t);
+  }
+  _norm(eid, s) {
+    const m = this._binMode?.get(eid);
+    if (m) return vhpOnOff(s, m === "dhw");
+    const k = this._pFac?.get(eid);
+    return k && isFinite(vhpNum(s)) ? String(vhpNum(s) * k) : s;
   }
   _val(role, t = this._t) {
     return vhpNum(this._raw(role, t));
   }
-  _pressure(role, t = this._t) {
+  /* Absolute pressure in bar. The sensor's unit (kPa, MPa, psi …) is converted; a value above the refrigerant's
+   * critical pressure is a wrong unit or scale (e.g. Optolink's 0.1 bar steps) and is not used. */
+  _pressureRaw(role, t = this._t) {
     const v = this._val(role, t);
     return this._config.pressure_type === "gauge" ? v + 1.013 : v;
+  }
+  _pCrit() {
+    return this._thermo?.d?.crit?.[1] || 60;
+  }
+  _pressure(role, t = this._t) {
+    const p = this._pressureRaw(role, t);
+    return p > this._pCrit() * 1.1 ? NaN : p;
   }
   _on(role, t = this._t) {
     return this._raw(role, t) === "on";
@@ -1534,7 +1574,7 @@ class VicareHeatpumpCard extends HTMLElement {
           if (!isFinite(ms)) continue;
           if (t.length && ms < t[t.length - 1]) continue;
           t.push(Math.max(ms, start));
-          v.push(s);
+          v.push(this._norm(eid, s));
         }
         hist[eid] = vhpBridge(t, v);
       }
@@ -1568,10 +1608,10 @@ class VicareHeatpumpCard extends HTMLElement {
           h.v.pop();
         }
         h.t.push(ts);
-        h.v.push(st.state);
+        h.v.push(this._norm(eid, st.state));
         changed = true;
-      } else if (ts === h.t[h.t.length - 1] && h.v[h.v.length - 1] !== st.state) {
-        h.v[h.v.length - 1] = st.state;
+      } else if (ts === h.t[h.t.length - 1] && h.v[h.v.length - 1] !== this._norm(eid, st.state)) {
+        h.v[h.v.length - 1] = this._norm(eid, st.state);
         changed = true;
       }
     }
@@ -2421,9 +2461,11 @@ class VicareHeatpumpCard extends HTMLElement {
     const tHot = this._val("hot_gas_t"), tSuc = this._val("suction_t"), tLiq = this._val("liquid_t");
     const tc = th.tDew(pH), tcB = th.tBub(pH), t0 = th.tDew(pS);
     this._set("v_hot", f(tHot));
-    this._set("v_hot_p", this._roles.hot_gas_p ? f(this._val("hot_gas_p"), "bar") : "");
+    // shown in bar as the sensor reports it (gauge or absolute), after unit conversion
+    const pShow = (r) => this._pressureRaw(r) - (this._config.pressure_type === "gauge" ? 1.013 : 0);
+    this._set("v_hot_p", this._roles.hot_gas_p ? f(pShow("hot_gas_p"), "bar") : "");
     this._set("v_suc", f(tSuc));
-    this._set("v_suc_p", f(this._val("suction_p"), "bar"));
+    this._set("v_suc_p", f(pShow("suction_p"), "bar"));
     this._set("v_liquid_t", f(tLiq));
     this._set("v_sec_supply", f(this._val("sec_supply")));
     this._set("v_sec_return", f(this._val("sec_return")));
@@ -2484,7 +2526,7 @@ class VicareHeatpumpCard extends HTMLElement {
     }
     if ($("v_mixer2")) this._set("v_mixer2", isFinite(this._val("mixer_2")) ? `${i.mixer} ${this._fmt(this._val("mixer_2"), 0)} %` : "");
     const ht = this._raw("heater"), hv = vhpNum(ht);
-    const heatOn = ht === "on" || (isFinite(hv) && hv > 0);
+    const heatOn = vhpOnOff(ht) === "on" || (isFinite(hv) && hv > 0);
     $("heater").style.display = this._heaterShow ? "" : "none";
     $("heater").classList.toggle("on", !!heatOn);
     if (this._heaterShow) {
@@ -2587,7 +2629,7 @@ class VicareHeatpumpCard extends HTMLElement {
     }
     // DHW circulation pump: drawn only if the history shows that it exists (has ever run)
     const dc = this._roles.dhw_circ;
-    if (dc && !this._dhwCircSeen) this._dhwCircSeen = this._hass.states[dc]?.state === "on" || (this._hist?.[dc]?.v || []).includes("on");
+    if (dc && !this._dhwCircSeen) this._dhwCircSeen = this._raw("dhw_circ", null) === "on" || (this._hist?.[dc]?.v || []).includes("on");
     $("dhwpump").style.display = this._dhwCircSeen ? "" : "none";
     $("dhwpump").classList.toggle("on", this._on("dhw_circ"));
     svg.classList.toggle("running", running);
@@ -2880,11 +2922,18 @@ class VicareHeatpumpCard extends HTMLElement {
    * below the brine). Returns { hp, lp }: null or { k, a, b } (message key, °C, °C). */
   _sensorFault(t = this._t) {
     if (!this._roles.suction_p && !this._roles.hot_gas_p) return { hp: null, lp: null };
+    // a reading above the critical pressure is a configuration error, shown at once
+    const crit = this._pCrit();
+    const scale = (role) => {
+      if (!this._roles[role]) return null;
+      const p = this._pressureRaw(role, t);
+      return p > crit * 1.1 ? { k: "scale", a: p, b: crit } : null;
+    };
+    const sc = { hp: scale("hot_gas_p"), lp: scale("suction_p") };
     const now = t ?? Date.now();
     const a = this._sensorFaultAt(t);
-    if (!a.hp && !a.lp) return a;
-    const b = this._sensorFaultAt(now - 300000);
-    return { hp: a.hp && b.hp ? a.hp : null, lp: a.lp && b.lp ? a.lp : null };
+    const b = a.hp || a.lp ? this._sensorFaultAt(now - 300000) : {};
+    return { hp: sc.hp || (a.hp && b.hp ? a.hp : null), lp: sc.lp || (a.lp && b.lp ? a.lp : null) };
   }
 
   _sensorFaultAt(t) {
@@ -2922,10 +2971,14 @@ class VicareHeatpumpCard extends HTMLElement {
 
   /* The sensor fault messages, or "" */
   _sensorFaultHtml(sf, skip) {
-    const i = this._i, f = (x) => `${this._fmt(x)} °C`;
+    const i = this._i, f = (x) => `${this._fmt(x)} °C`, bar = (x) => `${this._fmt(x)} bar`;
+    const text = (s) =>
+      sf[s].k === "scale"
+        ? i.sf["scale_" + s].replace("{a}", bar(sf[s].a)).replace("{b}", bar(sf[s].b))
+        : i.sf[s].replace("{why}", i.sf[sf[s].k].replace("{a}", f(sf[s].a)).replace("{b}", f(sf[s].b))) + (skip ? " " + i.sf[s + "_skip"] : "");
     return ["hp", "lp"]
       .filter((s) => sf[s])
-      .map((s) => `<div class="sfault">${VHP_ICON.warn}<span>${vhpEsc(i.sf[s].replace("{why}", i.sf[sf[s].k].replace("{a}", f(sf[s].a)).replace("{b}", f(sf[s].b))))}${skip ? " " + vhpEsc(i.sf[s + "_skip"]) : ""}</span></div>`)
+      .map((s) => `<div class="sfault">${VHP_ICON.warn}<span>${vhpEsc(text(s))}</span></div>`)
       .join("");
   }
 

@@ -92,6 +92,37 @@
       return v;
     };
   }
+  // ?fault=scale: the suction pressure in 0.1 bar steps, as some Optolink setups report it
+  if (FAULT === "scale") {
+    const base = at;
+    at = (t) => {
+      const v = base(t);
+      v.suction_gas_pressure = Math.round(v.suction_gas_pressure * 100) / 10;
+      return v;
+    };
+  }
+  // ?dhw=1: every run ends with hot water (diverter valve to the cylinder from 35 min, supply about 50 °C)
+  if (Q.has("dhw")) {
+    const base = at;
+    at = (t) => {
+      const v = base(t), ph = (((t + OFS) % cyc) + cyc) % cyc;
+      if (v.compressor === "on" && ph >= 35 * 60000) {
+        Object.assign(v, { domestic_hot_water_charging: "on", secondary_circuit_supply_temperature: 50, secondary_circuit_return_temperature: 44, hot_gas_pressure: 30, hot_gas_temperature: 82 });
+      }
+      return v;
+    };
+  }
+  // ?onoff=num|text: on/off states as other sources report them (1/0; the diverter valve as "Warmwasser"/"Heizen")
+  const ONOFF = Q.get("onoff");
+  if (ONOFF === "num" || ONOFF === "text") {
+    const base = at;
+    at = (t) => {
+      const v = base(t);
+      for (const [k, x] of Object.entries(v)) if (x === "on" || x === "off") v[k] = x === "on" ? "1" : "0";
+      if (ONOFF === "text") v.domestic_hot_water_charging = v.domestic_hot_water_charging === "1" ? "Warmwasser" : "Heizen";
+      return v;
+    };
+  }
   // ?phase=defrost|preparing_defrost|passive_defrost|cooling forces the current state
   const force = (v) => {
     if (!PH) return v;
